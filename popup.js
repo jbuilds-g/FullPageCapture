@@ -99,7 +99,7 @@ captureButton.addEventListener("click", async () => {
       await execute(tabId, targetY => {
         window.scrollTo(0, targetY);
       }, [y]);
-      await delay(140);
+      await delay(550);
       const shot = await chrome.tabs.captureVisibleTab(tab.windowId, { format: "png" });
       const img = await loadImage(shot);
       ctx.drawImage(img, 0, Math.round(y * scale));
