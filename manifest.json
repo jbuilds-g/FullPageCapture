@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "FullPageCapture",
+  "version": "1.0.0",
+  "description": "Capture entire web pages and export them as PNG, JPEG, or PDF.",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "downloads"
+  ],
+  "action": {
+    "default_title": "FullPageCapture",
+    "default_popup": "popup.html"
+  },
+  "minimum_chrome_version": "109"
+}
