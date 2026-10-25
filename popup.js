@@ -39,6 +39,7 @@ captureButton.addEventListener("click", async () => {
 
   let tabId;
   let restoreNeeded = false;
+  let originalScroll = 0;
   try {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     if (!tab?.id) throw new Error("No active tab was found.");
@@ -49,12 +50,36 @@ captureButton.addEventListener("click", async () => {
       const root = document.documentElement;
       const body = document.body;
       if (!root || !body) throw new Error("This page has no document to capture.");
-      const width = Math.max(root.scrollWidth, body.scrollWidth, root.clientWidth);
-      const height = Math.max(root.scrollHeight, body.scrollHeight, root.clientHeight);
+
+      const documentScroller = document.scrollingElement || root;
+      const candidates = [documentScroller, ...document.querySelectorAll("*")].filter((el, index, all) =>
+        all.indexOf(el) === index &&
+        el.scrollHeight > el.clientHeight + 120 &&
+        (el === documentScroller || /(auto|scroll|overlay)/.test(getComputedStyle(el).overflowY))
+      );
+      candidates.sort((a, b) => b.scrollHeight - a.scrollHeight);
+      const target = candidates[0] || documentScroller;
+      const isDocument = target === documentScroller || target === root || target === body;
+      const rect = isDocument
+        ? { left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight, width: window.innerWidth, height: window.innerHeight }
+        : (() => {
+            const r = target.getBoundingClientRect();
+            return { left: r.left, top: r.top, right: r.right, bottom: r.bottom, width: r.width, height: r.height };
+          })();
+
       const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
-      const maxScroll = Math.max(0, height - viewportHeight);
-      const scrollY = window.scrollY;
+      const scrollHeight = Math.max(target.scrollHeight, target.clientHeight);
+      const scrollTop = isDocument ? window.scrollY : target.scrollTop;
+      const maxScroll = Math.max(0, scrollHeight - (isDocument ? viewportHeight : target.clientHeight));
+      const width = isDocument
+        ? Math.max(root.scrollWidth, body.scrollWidth, root.clientWidth)
+        : viewportWidth;
+      const height = isDocument
+        ? Math.max(root.scrollHeight, body.scrollHeight, root.clientHeight)
+        : Math.ceil(Math.max(viewportHeight, rect.top + scrollHeight + Math.max(0, viewportHeight - rect.bottom)));
+
+      target.setAttribute("data-fpc-scroll-target", "true");
       const fixed = [];
       for (const el of document.querySelectorAll("*")) {
         const style = getComputedStyle(el);
@@ -64,11 +89,18 @@ captureButton.addEventListener("click", async () => {
           el.style.visibility = "hidden";
         }
       }
-      window.scrollTo(0, 0);
-      return { width, height, viewportWidth, viewportHeight, maxScroll, scrollY, step: Math.max(200, Math.floor(viewportHeight * 0.78)), fixedCount: fixed.length };
+      if (isDocument) window.scrollTo(0, 0);
+      else target.scrollTop = 0;
+      return {
+        width, height, viewportWidth, viewportHeight, maxScroll, scrollTop,
+        step: Math.max(180, Math.floor((isDocument ? viewportHeight : target.clientHeight) * 0.72)),
+        isDocument, targetLeft: rect.left, targetTop: rect.top,
+        targetWidth: rect.width, targetHeight: rect.height,
+        scrollHeight, clientHeight: target.clientHeight
+      };
     });
     restoreNeeded = true;
-    originalScrollY = page?.scrollY || 0;
+    originalScroll = page?.scrollTop || 0;
 
     if (!page || !page.width || !page.height) throw new Error("Could not measure this page.");
     if (page.height > 30000 || page.width > 12000) {
@@ -87,22 +119,36 @@ captureButton.addEventListener("click", async () => {
     if (!ctx) throw new Error("Could not create the image canvas.");
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(firstImage, 0, 0);
 
     const positions = [];
     for (let y = 0; y < page.maxScroll; y += page.step) positions.push(y);
-    if (!positions.length || positions[positions.length - 1] !== page.maxScroll) positions.push(page.maxScroll);
+    if (positions.length === 0 || positions[positions.length - 1] !== page.maxScroll) positions.push(page.maxScroll);
 
-    // The first screenshot was taken at scroll position zero, so reuse it.
-    ctx.drawImage(firstImage, 0, 0);
     for (let i = 0; i < positions.length; i++) {
       const y = positions[i];
       await execute(tabId, targetY => {
-        window.scrollTo(0, targetY);
+        const target = document.querySelector('[data-fpc-scroll-target="true"]');
+        if (!target) throw new Error("The page's scroll area could not be found.");
+        if (target === document.scrollingElement || target === document.documentElement || target === document.body) {
+          window.scrollTo(0, targetY);
+        } else {
+          target.scrollTop = targetY;
+        }
       }, [y]);
       await delay(550);
       const shot = await chrome.tabs.captureVisibleTab(tab.windowId, { format: "png" });
       const img = await loadImage(shot);
-      ctx.drawImage(img, 0, Math.round(y * scale));
+      if (page.isDocument) {
+        ctx.drawImage(img, 0, Math.round(y * scale));
+      } else {
+        const sx = Math.max(0, Math.round(page.targetLeft * scale));
+        const sy = Math.max(0, Math.round(page.targetTop * scale));
+        const sw = Math.min(img.naturalWidth - sx, Math.round(page.targetWidth * scale));
+        const sh = Math.min(img.naturalHeight - sy, Math.round(page.targetHeight * scale));
+        const dy = Math.round((page.targetTop + y) * scale);
+        if (sw > 0 && sh > 0) ctx.drawImage(img, sx, sy, sw, sh, sx, dy, sw, sh);
+      }
       setProgress(Math.round(((i + 1) / positions.length) * 100));
       setStatus("Capturing page section " + (i + 1) + " of " + positions.length + "…");
     }
@@ -120,8 +166,18 @@ captureButton.addEventListener("click", async () => {
             el.style.visibility = el.getAttribute("data-fpc-original-visibility");
             el.removeAttribute("data-fpc-original-visibility");
           }
-          window.scrollTo(0, y);
-        }, [originalScrollY]);
+          const target = document.querySelector('[data-fpc-scroll-target="true"]');
+          if (target) {
+            target.removeAttribute("data-fpc-scroll-target");
+            if (target === document.scrollingElement || target === document.documentElement || target === document.body) {
+              window.scrollTo(0, y);
+            } else {
+              target.scrollTop = y;
+            }
+          } else {
+            window.scrollTo(0, y);
+          }
+        }, [originalScroll]);
       } catch (_) {}
     }
     captureButton.disabled = false;
