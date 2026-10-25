@@ -58,7 +58,7 @@ captureButton.addEventListener("click", async () => {
         const style = getComputedStyle(el);
         if ((style.position === "fixed" || style.position === "sticky") &&
             style.display !== "none" && style.visibility !== "hidden") {
-          fixed.push({ el, visibility: el.style.visibility });
+          el.setAttribute("data-fpc-original-visibility", el.style.visibility);
           el.style.visibility = "hidden";
         }
       }
@@ -121,7 +121,6 @@ captureButton.addEventListener("click", async () => {
         });
       } catch (_) {}
     }
-    // The page's temporary styles are restored by a separate snapshot in the next patch.
     captureButton.disabled = false;
     saveButton.disabled = !capturedCanvas;
   }
