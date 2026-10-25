@@ -1,6 +1,6 @@
 # FullPageCapture
 
-FullPageCapture is a lightweight Chrome extension for capturing an entire web page and exporting it as PNG, JPEG, or PDF.
+> FullPageCapture is a lightweight Chrome extension for capturing an entire web page and exporting it as PNG, JPEG, or PDF.
 
 ## Version 1.0.0
 
