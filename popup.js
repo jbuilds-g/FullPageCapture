@@ -8,6 +8,7 @@ const exportOptions = document.querySelector("#export-options");
 
 let capturedCanvas = null;
 let capturedTitle = "page";
+let originalScrollY = 0;
 
 function setStatus(message) {
   statusEl.textContent = message;
@@ -53,6 +54,7 @@ captureButton.addEventListener("click", async () => {
       const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
       const maxScroll = Math.max(0, height - viewportHeight);
+      const scrollY = window.scrollY;
       const fixed = [];
       for (const el of document.querySelectorAll("*")) {
         const style = getComputedStyle(el);
@@ -63,9 +65,10 @@ captureButton.addEventListener("click", async () => {
         }
       }
       window.scrollTo(0, 0);
-      return { width, height, viewportWidth, viewportHeight, maxScroll, step: Math.max(200, Math.floor(viewportHeight * 0.78)), fixedCount: fixed.length };
+      return { width, height, viewportWidth, viewportHeight, maxScroll, scrollY, step: Math.max(200, Math.floor(viewportHeight * 0.78)), fixedCount: fixed.length };
     });
     restoreNeeded = true;
+    originalScrollY = page?.scrollY || 0;
 
     if (!page || !page.width || !page.height) throw new Error("Could not measure this page.");
     if (page.height > 30000 || page.width > 12000) {
@@ -112,13 +115,13 @@ captureButton.addEventListener("click", async () => {
   } finally {
     if (tabId && restoreNeeded) {
       try {
-        await execute(tabId, () => {
-          // Sticky elements are restored from the temporary marker added below when available.
+        await execute(tabId, y => {
           for (const el of document.querySelectorAll("[data-fpc-original-visibility]")) {
             el.style.visibility = el.getAttribute("data-fpc-original-visibility");
             el.removeAttribute("data-fpc-original-visibility");
           }
-        });
+          window.scrollTo(0, y);
+        }, [originalScrollY]);
       } catch (_) {}
     }
     captureButton.disabled = false;
