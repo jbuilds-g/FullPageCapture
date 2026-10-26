@@ -220,8 +220,13 @@ saveButton.addEventListener("click", async () => {
     try {
       const downloadsApi = typeof browser !== "undefined" ? browser.downloads : chrome.downloads;
       if (!downloadsApi?.download) throw new Error("Direct downloads are unavailable.");
-      const dataUrl = await blobToDataUrl(blob);
-      await downloadsApi.download({ url: dataUrl, filename, conflictAction: "uniquify" });
+      const objectUrl = URL.createObjectURL(blob);
+      try {
+        await downloadsApi.download({ url: objectUrl, filename, conflictAction: "uniquify" });
+      } finally {
+        // Give the browser time to resolve the object URL before releasing it.
+        setTimeout(() => URL.revokeObjectURL(objectUrl), 60000);
+      }
       setStatus("Download started: " + filename);
     } catch (downloadError) {
       // Keep the working export-page flow as a fallback if the direct download fails.
@@ -238,15 +243,6 @@ saveButton.addEventListener("click", async () => {
 });
 
 
-
-function blobToDataUrl(blob) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = () => reject(new Error("Could not prepare the file for download."));
-    reader.readAsDataURL(blob);
-  });
-}
 
 function storePendingExport(blob, filename) {
   return new Promise((resolve, reject) => {
