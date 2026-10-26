@@ -216,41 +216,45 @@ saveButton.addEventListener("click", async () => {
         format === "jpeg" ? 0.92 : undefined
       ));
     }
-    const url = URL.createObjectURL(blob);
     const filename = capturedTitle + "-full-page." + extension;
-    let downloadError = null;
-
-    try {
-      const extensionApi = typeof browser !== "undefined" ? browser : chrome;
-      if (!extensionApi?.downloads?.download) {
-        throw new Error("The browser download API is unavailable.");
-      }
-      await extensionApi.downloads.download({ url, filename, saveAs: true });
-      setStatus("Export sent to the browser's download manager.");
-    } catch (error) {
-      downloadError = error;
-      // Fallback: trigger a normal browser download directly from the extension popup.
-      try {
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = filename;
-        link.style.display = "none";
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        setStatus("Tried the browser's direct-save fallback. Check your downloads; if no file appeared, allow downloads for this extension and try again.");
-      } catch (fallbackError) {
-        const details = fallbackError?.message || downloadError?.message || "Unknown download error.";
-        throw new Error("Could not start the download: " + details);
-      }
-    }
-    setTimeout(() => URL.revokeObjectURL(url), 60000);
+    await storePendingExport(blob, filename);
+    const tabsApi = typeof browser !== "undefined" ? browser.tabs : chrome.tabs;
+    await tabsApi.create({ url: (typeof browser !== "undefined" ? browser.runtime : chrome.runtime).getURL("download.html") });
+    setStatus("Export opened in a new tab. Click Download file there.");
   } catch (error) {
     setStatus(error?.message || "Export failed. Check the extension's download permission and browser download settings.");
   } finally {
     saveButton.disabled = false;
   }
 });
+
+
+function storePendingExport(blob, filename) {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open("fullPageCaptureExports", 1);
+    request.onupgradeneeded = () => {
+      request.result.createObjectStore("exports");
+    };
+    request.onerror = () => reject(new Error("Could not prepare the export. Please reload the extension and try again."));
+    request.onsuccess = () => {
+      const db = request.result;
+      const transaction = db.transaction("exports", "readwrite");
+      transaction.objectStore("exports").put({ blob, filename }, "pending");
+      transaction.oncomplete = () => {
+        db.close();
+        resolve();
+      };
+      transaction.onerror = () => {
+        db.close();
+        reject(new Error("Could not store the export for download."));
+      };
+      transaction.onabort = () => {
+        db.close();
+        reject(new Error("The export could not be saved for download."));
+      };
+    };
+  });
+}
 
 function makePdf(canvas) {
   // Build a minimal one-page PDF with the full capture embedded as a JPEG image.
