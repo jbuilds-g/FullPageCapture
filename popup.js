@@ -217,10 +217,19 @@ saveButton.addEventListener("click", async () => {
       ));
     }
     const filename = capturedTitle + "-full-page." + extension;
-    await storePendingExport(blob, filename);
-    const tabsApi = typeof browser !== "undefined" ? browser.tabs : chrome.tabs;
-    await tabsApi.create({ url: (typeof browser !== "undefined" ? browser.runtime : chrome.runtime).getURL("download.html") });
-    setStatus("Export opened in a new tab. Click Download file there.");
+    try {
+      const downloadsApi = typeof browser !== "undefined" ? browser.downloads : chrome.downloads;
+      if (!downloadsApi?.download) throw new Error("Direct downloads are unavailable.");
+      const dataUrl = await blobToDataUrl(blob);
+      await downloadsApi.download({ url: dataUrl, filename, conflictAction: "uniquify" });
+      setStatus("Download started: " + filename);
+    } catch (downloadError) {
+      // Keep the working export-page flow as a fallback if the direct download fails.
+      await storePendingExport(blob, filename);
+      const tabsApi = typeof browser !== "undefined" ? browser.tabs : chrome.tabs;
+      await tabsApi.create({ url: (typeof browser !== "undefined" ? browser.runtime : chrome.runtime).getURL("download.html") });
+      setStatus("Direct download failed, so the export opened in a new tab.");
+    }
   } catch (error) {
     setStatus(error?.message || "Export failed. Check the extension's download permission and browser download settings.");
   } finally {
@@ -228,6 +237,16 @@ saveButton.addEventListener("click", async () => {
   }
 });
 
+
+
+function blobToDataUrl(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error("Could not prepare the file for download."));
+    reader.readAsDataURL(blob);
+  });
+}
 
 function storePendingExport(blob, filename) {
   return new Promise((resolve, reject) => {
