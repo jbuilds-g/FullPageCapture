@@ -217,15 +217,36 @@ saveButton.addEventListener("click", async () => {
       ));
     }
     const url = URL.createObjectURL(blob);
-    await chrome.downloads.download({
-      url,
-      filename: capturedTitle + "-full-page." + extension,
-      saveAs: true
-    });
-    setStatus("Export prepared. Choose where to save it in the download dialog.");
+    const filename = capturedTitle + "-full-page." + extension;
+    let downloadError = null;
+
+    try {
+      const extensionApi = typeof browser !== "undefined" ? browser : chrome;
+      if (!extensionApi?.downloads?.download) {
+        throw new Error("The browser download API is unavailable.");
+      }
+      await extensionApi.downloads.download({ url, filename, saveAs: true });
+      setStatus("Export sent to the browser's download manager.");
+    } catch (error) {
+      downloadError = error;
+      // Fallback: trigger a normal browser download directly from the extension popup.
+      try {
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = filename;
+        link.style.display = "none";
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setStatus("Tried the browser's direct-save fallback. Check your downloads; if no file appeared, allow downloads for this extension and try again.");
+      } catch (fallbackError) {
+        const details = fallbackError?.message || downloadError?.message || "Unknown download error.";
+        throw new Error("Could not start the download: " + details);
+      }
+    }
     setTimeout(() => URL.revokeObjectURL(url), 60000);
   } catch (error) {
-    setStatus(error?.message || "Export failed.");
+    setStatus(error?.message || "Export failed. Check the extension's download permission and browser download settings.");
   } finally {
     saveButton.disabled = false;
   }
