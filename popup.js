@@ -7,8 +7,14 @@ const progressEl = document.querySelector("#progress");
 const exportOptions = document.querySelector("#export-options");
 const settingsButton = document.querySelector("#settings");
 const openExportButton = document.querySelector("#open-export");
+const openLibraryButton = document.querySelector("#open-library");
 let completedDownloadId = null;
 let latestExportAvailable = false;
+
+openLibraryButton.addEventListener("click", async () => {
+  try { await chrome.tabs.create({ url: chrome.runtime.getURL("library.html") }); }
+  catch (error) { setStatus("Could not open the Library. " + (error?.message || "")); }
+});
 
 openExportButton.addEventListener("click", async () => {
   if (!latestExportAvailable) return;
@@ -18,7 +24,7 @@ openExportButton.addEventListener("click", async () => {
     setStatus("Could not open the saved file. " + (error?.message || ""));
   }
 });
-const DEFAULT_SETTINGS = { defaultFormat: "png", filenamePattern: "{title}-full-page", saveFolder: "FullPageCapture", showSaveDialog: false };
+const DEFAULT_SETTINGS = { defaultFormat: "png", filenamePattern: "{title}-full-page", saveFolder: "FullPageCapture", showSaveDialog: false, libraryEnabled: false };
 
 async function loadSettings() {
   const stored = await chrome.storage.local.get(DEFAULT_SETTINGS);
@@ -250,6 +256,10 @@ saveButton.addEventListener("click", async () => {
       .replace(/[\\/:*?"<>|]+/g, "_").trim() || capturedTitle;
     const folder = (settings.saveFolder || "").replace(/\\/g, "/").split("/").filter(part => part && part !== "." && part !== "..").join("/");
     const filename = (folder ? folder + "/" : "") + baseName + "." + extension;
+    if (settings.libraryEnabled) {
+      try { await storeLibraryCapture(blob, { id: crypto.randomUUID(), filename, title: capturedTitle, format: extension.toUpperCase(), createdAt: Date.now(), width: capturedCanvas.width, height: capturedCanvas.height, blob }); }
+      catch (error) { setStatus("Export prepared, but Library could not save a copy: " + (error?.message || "storage error")); }
+    }
     try {
       await storeLatestExport(blob, filename);
       latestExportAvailable = true;
@@ -307,8 +317,8 @@ saveButton.addEventListener("click", async () => {
 
 function storeLatestExport(blob, filename) {
   return new Promise((resolve, reject) => {
-    const request = indexedDB.open("fullPageCaptureExports", 1);
-    request.onupgradeneeded = () => request.result.createObjectStore("exports");
+    const request = indexedDB.open("fullPageCaptureExports", 2);
+    request.onupgradeneeded = () => { if (!request.result.objectStoreNames.contains("exports")) request.result.createObjectStore("exports"); if (!request.result.objectStoreNames.contains("library")) request.result.createObjectStore("library", { keyPath: "id" }); };
     request.onerror = () => reject(new Error("Could not prepare the file preview."));
     request.onsuccess = () => {
       const db = request.result;
@@ -323,10 +333,8 @@ function storeLatestExport(blob, filename) {
 
 function storePendingExport(blob, filename) {
   return new Promise((resolve, reject) => {
-    const request = indexedDB.open("fullPageCaptureExports", 1);
-    request.onupgradeneeded = () => {
-      request.result.createObjectStore("exports");
-    };
+    const request = indexedDB.open("fullPageCaptureExports", 2);
+    request.onupgradeneeded = () => { if (!request.result.objectStoreNames.contains("exports")) request.result.createObjectStore("exports"); if (!request.result.objectStoreNames.contains("library")) request.result.createObjectStore("library", { keyPath: "id" }); };
     request.onerror = () => reject(new Error("Could not prepare the export. Please reload the extension and try again."));
     request.onsuccess = () => {
       const db = request.result;
