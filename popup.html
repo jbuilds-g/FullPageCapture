@@ -13,18 +13,18 @@
       <div class="brand-copy"><h1>FullPageCapture</h1><p>Capture the whole page</p></div>
       <button id="settings" class="icon-button" type="button" aria-label="Settings" title="Settings">⚙</button>
     </header>
+    <label for="format">Capture format</label>
+    <select id="format">
+      <option value="png">PNG image</option>
+      <option value="jpeg">JPEG image</option>
+      <option value="pdf">PDF document</option>
+    </select>
     <button id="capture" class="primary">Capture full page</button>
     <button id="open-library" class="secondary" type="button">Open Library</button>
     <div id="status" class="status" role="status" aria-live="polite">Ready to capture.</div>
     <button id="open-export" class="secondary open-export" type="button" hidden>Open saved file</button>
     <div id="progress-wrap" class="progress-wrap" hidden><div id="progress" class="progress"></div></div>
     <section id="export-options" hidden>
-      <label for="format">Export format</label>
-      <select id="format">
-        <option value="png">PNG image</option>
-        <option value="jpeg">JPEG image</option>
-        <option value="pdf">PDF document</option>
-      </select>
       <button id="save" class="secondary">Save capture</button>
     </section>
     <p class="footnote">Some browser pages and protected content cannot be captured.</p>
