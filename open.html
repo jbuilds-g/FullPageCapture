@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Open saved capture · FullPageCapture</title>
+  <link rel="stylesheet" href="popup.css">
+  <style>
+    body { width: min(100%, 900px); margin: 0 auto; }
+    .preview { margin-top: 16px; width: 100%; min-height: 65vh; border: 0; background: Canvas; }
+    img.preview { object-fit: contain; }
+    .file-name { overflow-wrap: anywhere; color: GrayText; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header>
+      <div class="brand-mark" aria-hidden="true">▤</div>
+      <div><h1>Saved capture</h1><p>FullPageCapture</p></div>
+    </header>
+    <div id="status" class="status" role="status" aria-live="polite">Opening your saved capture…</div>
+    <p id="filename" class="file-name"></p>
+    <div id="preview"></div>
+  </main>
+  <script src="open.js"></script>
+</body>
+</html>
