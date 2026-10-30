@@ -5,6 +5,16 @@ const statusEl = document.querySelector("#status");
 const progressWrap = document.querySelector("#progress-wrap");
 const progressEl = document.querySelector("#progress");
 const exportOptions = document.querySelector("#export-options");
+const settingsButton = document.querySelector("#settings");
+const DEFAULT_SETTINGS = { defaultFormat: "png", filenamePattern: "{title}-full-page", saveFolder: "FullPageCapture", showSaveDialog: false };
+
+async function loadSettings() {
+  const stored = await chrome.storage.local.get(DEFAULT_SETTINGS);
+  return { ...DEFAULT_SETTINGS, ...stored };
+}
+
+settingsButton.addEventListener("click", () => chrome.runtime.openOptionsPage());
+loadSettings().then(settings => { formatSelect.value = settings.defaultFormat; }).catch(() => {});
 
 let capturedCanvas = null;
 let capturedTitle = "page";
@@ -198,6 +208,7 @@ saveButton.addEventListener("click", async () => {
   if (!capturedCanvas) return;
   saveButton.disabled = true;
   try {
+    const settings = await loadSettings();
     const format = formatSelect.value;
     setStatus("Preparing " + format.toUpperCase() + " export…");
     let blob;
@@ -216,24 +227,31 @@ saveButton.addEventListener("click", async () => {
         format === "jpeg" ? 0.92 : undefined
       ));
     }
-    const filename = capturedTitle + "-full-page." + extension;
+    const now = new Date();
+    const date = [now.getFullYear(), String(now.getMonth() + 1).padStart(2, "0"), String(now.getDate()).padStart(2, "0")].join("-");
+    const time = [String(now.getHours()).padStart(2, "0"), String(now.getMinutes()).padStart(2, "0"), String(now.getSeconds()).padStart(2, "0")].join("-");
+    const baseName = (settings.filenamePattern || DEFAULT_SETTINGS.filenamePattern)
+      .replaceAll("{title}", capturedTitle).replaceAll("{date}", date).replaceAll("{time}", time)
+      .replace(/[\\/:*?"<>|]+/g, "_").trim() || capturedTitle;
+    const folder = (settings.saveFolder || "").replace(/\\\\/g, "/").split("/").filter(part => part && part !== "." && part !== "..").join("/");
+    const filename = (folder ? folder + "/" : "") + baseName + "." + extension;
     try {
       const downloadsApi = typeof browser !== "undefined" ? browser.downloads : chrome.downloads;
       if (!downloadsApi?.download) throw new Error("Direct downloads are unavailable.");
       const objectUrl = URL.createObjectURL(blob);
       try {
-        await downloadsApi.download({ url: objectUrl, filename, conflictAction: "uniquify" });
+        await downloadsApi.download({ url: objectUrl, filename, conflictAction: "uniquify", saveAs: Boolean(settings.showSaveDialog) });
       } finally {
         // Give the browser time to resolve the object URL before releasing it.
         setTimeout(() => URL.revokeObjectURL(objectUrl), 60000);
       }
-      setStatus("Download started: " + filename);
+      setStatus("Extraction started: " + filename);
     } catch (downloadError) {
       // Keep the working export-page flow as a fallback if the direct download fails.
       await storePendingExport(blob, filename);
       const tabsApi = typeof browser !== "undefined" ? browser.tabs : chrome.tabs;
       await tabsApi.create({ url: (typeof browser !== "undefined" ? browser.runtime : chrome.runtime).getURL("download.html") });
-      setStatus("Direct download failed, so the export opened in a new tab.");
+      setStatus("The export opened in a new tab because automatic extraction was unavailable.");
     }
   } catch (error) {
     setStatus(error?.message || "Export failed. Check the extension's download permission and browser download settings.");
