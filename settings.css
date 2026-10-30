@@ -7,3 +7,5 @@
 .setting-toggle label { margin: 0; color: CanvasText; font-size: 13px; }
 .setting-toggle input { width: 18px; height: 18px; flex: 0 0 auto; }
 #save-settings { margin-top: 16px; }
+
+.library-setting { border-bottom: 0; }
