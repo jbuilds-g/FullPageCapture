@@ -6,6 +6,18 @@ const progressWrap = document.querySelector("#progress-wrap");
 const progressEl = document.querySelector("#progress");
 const exportOptions = document.querySelector("#export-options");
 const settingsButton = document.querySelector("#settings");
+const openExportButton = document.querySelector("#open-export");
+let completedDownloadId = null;
+
+openExportButton.addEventListener("click", async () => {
+  if (completedDownloadId === null) return;
+  try {
+    const downloadsApi = typeof browser !== "undefined" ? browser.downloads : chrome.downloads;
+    await downloadsApi.open(completedDownloadId);
+  } catch (error) {
+    setStatus("Could not open the saved file. " + (error?.message || ""));
+  }
+});
 const DEFAULT_SETTINGS = { defaultFormat: "png", filenamePattern: "{title}-full-page", saveFolder: "FullPageCapture", showSaveDialog: false };
 
 async function loadSettings() {
@@ -240,12 +252,25 @@ saveButton.addEventListener("click", async () => {
       if (!downloadsApi?.download) throw new Error("Direct downloads are unavailable.");
       const objectUrl = URL.createObjectURL(blob);
       try {
-        await downloadsApi.download({ url: objectUrl, filename, conflictAction: "uniquify", saveAs: Boolean(settings.showSaveDialog) });
+        completedDownloadId = await downloadsApi.download({ url: objectUrl, filename, conflictAction: "uniquify", saveAs: Boolean(settings.showSaveDialog) });
+        setStatus("Extraction started: " + filename);
+        openExportButton.hidden = true;
+        const onChanged = delta => {
+          if (delta.id !== completedDownloadId) return;
+          if (delta.state?.current === "complete") {
+            downloadsApi.onChanged.removeListener(onChanged);
+            setStatus("Extraction completed: " + filename);
+            openExportButton.hidden = false;
+          } else if (delta.state?.current === "interrupted") {
+            downloadsApi.onChanged.removeListener(onChanged);
+            setStatus("Extraction failed: " + (delta.error?.current || "The browser interrupted the download."));
+          }
+        };
+        downloadsApi.onChanged.addListener(onChanged);
       } finally {
         // Give the browser time to resolve the object URL before releasing it.
         setTimeout(() => URL.revokeObjectURL(objectUrl), 60000);
       }
-      setStatus("Extraction started: " + filename);
     } catch (downloadError) {
       // Keep the working export-page flow as a fallback if the direct download fails.
       await storePendingExport(blob, filename);
