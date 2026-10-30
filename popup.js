@@ -36,6 +36,7 @@ loadSettings().then(settings => { formatSelect.value = settings.defaultFormat; }
 
 let capturedCanvas = null;
 let capturedTitle = "page";
+let capturedFormat = "png";
 let originalScrollY = 0;
 
 function setStatus(message) {
@@ -60,6 +61,8 @@ async function execute(tabId, func, args = []) {
 captureButton.addEventListener("click", async () => {
   captureButton.disabled = true;
   saveButton.disabled = true;
+  formatSelect.disabled = true;
+  capturedFormat = formatSelect.value;
   exportOptions.hidden = true;
   capturedCanvas = null;
   setProgress(0);
@@ -188,16 +191,14 @@ captureButton.addEventListener("click", async () => {
     const captureSettings = await loadSettings();
     if (captureSettings.libraryEnabled) {
       try {
-        const libraryBlob = await new Promise((resolve, reject) => canvas.toBlob(
-          blob => blob ? resolve(blob) : reject(new Error("Could not encode the Library capture.")),
-          "image/png"
-        ));
-        const libraryFilename = capturedTitle + "-full-page.png";
+        const libraryBlob = await encodeCapture(canvas, capturedFormat);
+        const libraryExtension = capturedFormat === "jpeg" ? "jpg" : capturedFormat;
+        const libraryFilename = capturedTitle + "-full-page." + libraryExtension;
         await storeLibraryCapture({
           id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random(),
           filename: libraryFilename,
           title: capturedTitle,
-          format: "PNG",
+          format: capturedFormat.toUpperCase(),
           createdAt: Date.now(),
           width: canvas.width,
           height: canvas.height,
@@ -235,9 +236,20 @@ captureButton.addEventListener("click", async () => {
       } catch (_) {}
     }
     captureButton.disabled = false;
+    formatSelect.disabled = false;
     saveButton.disabled = !capturedCanvas;
   }
 });
+
+async function encodeCapture(canvas, format) {
+  if (format === "pdf") return makePdf(canvas);
+  const mime = format === "jpeg" ? "image/jpeg" : "image/png";
+  return new Promise((resolve, reject) => canvas.toBlob(
+    blob => blob ? resolve(blob) : reject(new Error("Could not encode the capture.")),
+    mime,
+    format === "jpeg" ? 0.92 : undefined
+  ));
+}
 
 function loadImage(src) {
   return new Promise((resolve, reject) => {
@@ -256,24 +268,10 @@ saveButton.addEventListener("click", async () => {
   latestExportAvailable = false;
   try {
     const settings = await loadSettings();
-    const format = formatSelect.value;
+    const format = capturedFormat;
     setStatus("Preparing " + format.toUpperCase() + " export…");
-    let blob;
-    let mime;
-    let extension;
-    if (format === "pdf") {
-      blob = makePdf(capturedCanvas);
-      mime = "application/pdf";
-      extension = "pdf";
-    } else {
-      mime = format === "jpeg" ? "image/jpeg" : "image/png";
-      extension = format === "jpeg" ? "jpg" : "png";
-      blob = await new Promise((resolve, reject) => capturedCanvas.toBlob(
-        result => result ? resolve(result) : reject(new Error("Could not encode the image.")),
-        mime,
-        format === "jpeg" ? 0.92 : undefined
-      ));
-    }
+    const blob = await encodeCapture(capturedCanvas, format);
+    const extension = format === "jpeg" ? "jpg" : format;
     const now = new Date();
     const date = [now.getFullYear(), String(now.getMonth() + 1).padStart(2, "0"), String(now.getDate()).padStart(2, "0")].join("-");
     const time = [String(now.getHours()).padStart(2, "0"), String(now.getMinutes()).padStart(2, "0"), String(now.getSeconds()).padStart(2, "0")].join("-");
