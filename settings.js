@@ -1,4 +1,4 @@
-const defaults = { defaultFormat: "png", filenamePattern: "{title}-full-page", saveFolder: "FullPageCapture", showSaveDialog: false };
+const defaults = { defaultFormat: "png", filenamePattern: "{title}-full-page", saveFolder: "FullPageCapture", showSaveDialog: false, libraryEnabled: false };
 const format = document.querySelector("#default-format");
 const pattern = document.querySelector("#filename-pattern");
 const folder = document.querySelector("#save-folder");
