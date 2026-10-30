@@ -36,6 +36,10 @@
       <div><label for="show-save-dialog">Ask where to save each capture</label><p class="help">Show the browser's save-location picker for every export. Chromium may also show it when its own Settings → Downloads → Ask where to save each file option is enabled. Extensions cannot override that browser-wide setting.</p></div>
       <input id="show-save-dialog" type="checkbox">
     </section>
+    <section class="settings-section setting-toggle">
+      <div><label for="library-enabled">Capture Library</label><p class="help">Keep a local copy of each completed export in your Library. Turning this off stops saving new copies but keeps existing captures.</p></div>
+      <input id="library-enabled" type="checkbox">
+    </section>
     <div id="settings-status" class="status" role="status" aria-live="polite">Settings are stored on this device.</div>
     <button id="save-settings" class="primary">Save settings</button>
   </main>
