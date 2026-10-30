@@ -8,12 +8,12 @@ const exportOptions = document.querySelector("#export-options");
 const settingsButton = document.querySelector("#settings");
 const openExportButton = document.querySelector("#open-export");
 let completedDownloadId = null;
+let latestExportAvailable = false;
 
 openExportButton.addEventListener("click", async () => {
-  if (completedDownloadId === null) return;
+  if (!latestExportAvailable) return;
   try {
-    const downloadsApi = typeof browser !== "undefined" ? browser.downloads : chrome.downloads;
-    await downloadsApi.open(completedDownloadId);
+    await chrome.tabs.create({ url: chrome.runtime.getURL("open.html") });
   } catch (error) {
     setStatus("Could not open the saved file. " + (error?.message || ""));
   }
@@ -221,6 +221,7 @@ saveButton.addEventListener("click", async () => {
   saveButton.disabled = true;
   openExportButton.hidden = true;
   completedDownloadId = null;
+  latestExportAvailable = false;
   try {
     const settings = await loadSettings();
     const format = formatSelect.value;
@@ -250,6 +251,12 @@ saveButton.addEventListener("click", async () => {
     const folder = (settings.saveFolder || "").replace(/\\/g, "/").split("/").filter(part => part && part !== "." && part !== "..").join("/");
     const filename = (folder ? folder + "/" : "") + baseName + "." + extension;
     try {
+      await storeLatestExport(blob, filename);
+      latestExportAvailable = true;
+    } catch (_) {
+      latestExportAvailable = false;
+    }
+    try {
       const downloadsApi = typeof browser !== "undefined" ? browser.downloads : chrome.downloads;
       if (!downloadsApi?.download) throw new Error("Direct downloads are unavailable.");
       const objectUrl = URL.createObjectURL(blob);
@@ -262,7 +269,7 @@ saveButton.addEventListener("click", async () => {
           if (delta.state?.current === "complete") {
             downloadsApi.onChanged.removeListener(onChanged);
             setStatus("Extraction completed: " + filename);
-            openExportButton.hidden = false;
+            openExportButton.hidden = !latestExportAvailable;
           } else if (delta.state?.current === "interrupted") {
             downloadsApi.onChanged.removeListener(onChanged);
             setStatus("Extraction failed: " + (delta.error?.current || "The browser interrupted the download."));
@@ -273,7 +280,7 @@ saveButton.addEventListener("click", async () => {
         if (download?.state === "complete") {
           downloadsApi.onChanged.removeListener(onChanged);
           setStatus("Extraction completed: " + filename);
-          openExportButton.hidden = false;
+          openExportButton.hidden = !latestExportAvailable;
         } else if (download?.state === "interrupted") {
           downloadsApi.onChanged.removeListener(onChanged);
           setStatus("Extraction failed: " + (download.error || "The browser interrupted the download."));
@@ -297,6 +304,22 @@ saveButton.addEventListener("click", async () => {
 });
 
 
+
+function storeLatestExport(blob, filename) {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open("fullPageCaptureExports", 1);
+    request.onupgradeneeded = () => request.result.createObjectStore("exports");
+    request.onerror = () => reject(new Error("Could not prepare the file preview."));
+    request.onsuccess = () => {
+      const db = request.result;
+      const transaction = db.transaction("exports", "readwrite");
+      transaction.objectStore("exports").put({ blob, filename }, "latest");
+      transaction.oncomplete = () => { db.close(); resolve(); };
+      transaction.onerror = () => { db.close(); reject(new Error("Could not save the file preview.")); };
+      transaction.onabort = () => { db.close(); reject(new Error("Could not save the file preview.")); };
+    };
+  });
+}
 
 function storePendingExport(blob, filename) {
   return new Promise((resolve, reject) => {
