@@ -10,6 +10,8 @@ header { display: flex; align-items: center; gap: 11px; margin-bottom: 20px; }
 .brand-mark { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 13px; background: #315ee7; color: white; font-size: 25px; }
 h1 { font-size: 16px; line-height: 1.25; margin: 0 0 3px; font-weight: 700; }
 header p { color: GrayText; margin: 0; font-size: 12px; }
+.brand-copy { flex: 1; min-width: 0; }
+.icon-button { width: 36px; min-width: 36px; min-height: 36px; padding: 0; background: transparent; color: GrayText; font-size: 19px; }
 button, select { width: 100%; border-radius: 10px; font: inherit; min-height: 39px; }
 button { cursor: pointer; border: 0; font-weight: 650; padding: 10px 12px; }
 button:disabled { opacity: .55; cursor: wait; }
