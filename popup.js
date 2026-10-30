@@ -397,3 +397,23 @@ function makePdf(canvas) {
   append(ascii(xref));
   return new Blob(chunks, { type: "application/pdf" });
 }
+
+
+function storeLibraryCapture(item) {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open("fullPageCaptureExports", 2);
+    request.onupgradeneeded = () => {
+      if (!request.result.objectStoreNames.contains("exports")) request.result.createObjectStore("exports");
+      if (!request.result.objectStoreNames.contains("library")) request.result.createObjectStore("library", { keyPath: "id" });
+    };
+    request.onerror = () => reject(new Error("Could not open Library storage."));
+    request.onsuccess = () => {
+      const db = request.result;
+      const transaction = db.transaction("library", "readwrite");
+      transaction.objectStore("library").put(item);
+      transaction.oncomplete = () => { db.close(); resolve(); };
+      transaction.onerror = () => { db.close(); reject(new Error("Could not save this capture to the Library.")); };
+      transaction.onabort = () => { db.close(); reject(new Error("Library storage was interrupted.")); };
+    };
+  });
+}
