@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Settings · FullPageCapture</title>
+  <link rel="stylesheet" href="popup.css">
+  <link rel="stylesheet" href="settings.css">
+</head>
+<body class="settings-page">
+  <main class="app settings-app">
+    <header>
+      <div class="brand-mark" aria-hidden="true">▤</div>
+      <div><h1>Settings</h1><p>Configure how captures are saved</p></div>
+    </header>
+    <section class="settings-section">
+      <label for="default-format">Default export format</label>
+      <select id="default-format">
+        <option value="png">PNG image</option>
+        <option value="jpeg">JPEG image</option>
+        <option value="pdf">PDF document</option>
+      </select>
+      <p class="help">You can still choose a different format each time you save a capture.</p>
+    </section>
+    <section class="settings-section">
+      <label for="filename-pattern">Filename pattern</label>
+      <input id="filename-pattern" type="text" maxlength="120" spellcheck="false">
+      <p class="help">Use {title}, {date}, and {time}. Example: {title}-{date}</p>
+    </section>
+    <section class="settings-section">
+      <label for="save-folder">Save subfolder</label>
+      <input id="save-folder" type="text" maxlength="120" placeholder="FullPageCapture">
+      <p class="help">A folder inside your browser's configured downloads location. Leave blank to use its root.</p>
+    </section>
+    <section class="settings-section setting-toggle">
+      <div><label for="show-save-dialog">Ask where to save each capture</label><p class="help">Show the browser's save-location picker for every export.</p></div>
+      <input id="show-save-dialog" type="checkbox">
+    </section>
+    <div id="settings-status" class="status" role="status" aria-live="polite">Settings are stored on this device.</div>
+    <button id="save-settings" class="primary">Save settings</button>
+  </main>
+  <script src="settings.js"></script>
+</body>
+</html>
