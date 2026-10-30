@@ -11,9 +11,10 @@ function setStatus(message) {
 
 function readPendingExport() {
   return new Promise((resolve, reject) => {
-    const request = indexedDB.open("fullPageCaptureExports", 1);
+    const request = indexedDB.open("fullPageCaptureExports", 2);
     request.onupgradeneeded = () => {
-      request.result.createObjectStore("exports");
+      if (!request.result.objectStoreNames.contains("exports")) request.result.createObjectStore("exports");
+      if (!request.result.objectStoreNames.contains("library")) request.result.createObjectStore("library", { keyPath: "id" });
     };
     request.onerror = () => reject(new Error("Could not open the saved export. Return to the extension and capture the page again."));
     request.onsuccess = () => {
@@ -35,7 +36,7 @@ function readPendingExport() {
 
 function clearPendingExport() {
   return new Promise(resolve => {
-    const request = indexedDB.open("fullPageCaptureExports", 1);
+    const request = indexedDB.open("fullPageCaptureExports", 2);
     request.onerror = () => resolve();
     request.onsuccess = () => {
       const db = request.result;
