@@ -3,6 +3,7 @@ const format = document.querySelector("#default-format");
 const pattern = document.querySelector("#filename-pattern");
 const folder = document.querySelector("#save-folder");
 const saveDialog = document.querySelector("#show-save-dialog");
+const libraryEnabled = document.querySelector("#library-enabled");
 const status = document.querySelector("#settings-status");
 const saveButton = document.querySelector("#save-settings");
 
@@ -12,6 +13,7 @@ async function initialize() {
   pattern.value = settings.filenamePattern;
   folder.value = settings.saveFolder;
   saveDialog.checked = Boolean(settings.showSaveDialog);
+  libraryEnabled.checked = Boolean(settings.libraryEnabled);
 }
 
 saveButton.addEventListener("click", async () => {
@@ -23,7 +25,8 @@ saveButton.addEventListener("click", async () => {
       defaultFormat: format.value,
       filenamePattern,
       saveFolder,
-      showSaveDialog: saveDialog.checked
+      showSaveDialog: saveDialog.checked,
+      libraryEnabled: libraryEnabled.checked
     });
     status.textContent = "Settings saved.";
   } catch (error) {
