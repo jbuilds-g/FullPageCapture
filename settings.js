@@ -16,7 +16,7 @@ async function initialize() {
 
 saveButton.addEventListener("click", async () => {
   const filenamePattern = pattern.value.trim() || defaults.filenamePattern;
-  const saveFolder = folder.value.trim().replace(/\\\\/g, "/").split("/").filter(part => part && part !== "." && part !== "..").join("/");
+  const saveFolder = folder.value.trim().replace(/\\/g, "/").split("/").filter(part => part && part !== "." && part !== "..").join("/");
   saveButton.disabled = true;
   try {
     await chrome.storage.local.set({
