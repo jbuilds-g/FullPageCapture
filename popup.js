@@ -183,7 +183,33 @@ captureButton.addEventListener("click", async () => {
 
     capturedCanvas = canvas;
     exportOptions.hidden = false;
-    setStatus("Capture ready: " + canvas.width + " × " + canvas.height + " pixels.");
+
+    // Library storage is part of capture completion, not the separate file-export action.
+    const captureSettings = await loadSettings();
+    if (captureSettings.libraryEnabled) {
+      try {
+        const libraryBlob = await new Promise((resolve, reject) => canvas.toBlob(
+          blob => blob ? resolve(blob) : reject(new Error("Could not encode the Library capture.")),
+          "image/png"
+        ));
+        const libraryFilename = capturedTitle + "-full-page.png";
+        await storeLibraryCapture({
+          id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random(),
+          filename: libraryFilename,
+          title: capturedTitle,
+          format: "PNG",
+          createdAt: Date.now(),
+          width: canvas.width,
+          height: canvas.height,
+          blob: libraryBlob
+        });
+        setStatus("Capture ready and added to Library: " + canvas.width + " × " + canvas.height + " pixels.");
+      } catch (error) {
+        setStatus("Capture ready, but it could not be added to Library: " + (error?.message || "storage error"));
+      }
+    } else {
+      setStatus("Capture ready: " + canvas.width + " × " + canvas.height + " pixels.");
+    }
   } catch (error) {
     setStatus(error?.message || "Capture failed. Try another page.");
   } finally {
@@ -256,10 +282,6 @@ saveButton.addEventListener("click", async () => {
       .replace(/[\\/:*?"<>|]+/g, "_").trim() || capturedTitle;
     const folder = (settings.saveFolder || "").replace(/\\/g, "/").split("/").filter(part => part && part !== "." && part !== "..").join("/");
     const filename = (folder ? folder + "/" : "") + baseName + "." + extension;
-    if (settings.libraryEnabled) {
-      try { await storeLibraryCapture({ id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random()), filename, title: capturedTitle, format: extension.toUpperCase(), createdAt: Date.now(), width: capturedCanvas.width, height: capturedCanvas.height, blob }); }
-      catch (error) { setStatus("Export prepared, but Library could not save a copy: " + (error?.message || "storage error")); }
-    }
     try {
       await storeLatestExport(blob, filename);
       latestExportAvailable = true;
