@@ -64,11 +64,11 @@ async function initialize() {
     exportFilename = item.filename || exportFilename;
     objectUrl = URL.createObjectURL(exportBlob);
     downloadButton.disabled = false;
-    setStatus("Starting download: " + exportFilename + ". If it doesn't start, click Download file.");
+    setStatus("Extraction started: " + exportFilename + ". If it doesn't start, click Save capture.");
     triggerDownload();
     await clearPendingExport();
   } catch (error) {
-    setStatus(error?.message || "Could not prepare the download.");
+    setStatus(error?.message || "Could not prepare the export.");
   }
 }
 
@@ -87,10 +87,10 @@ downloadButton.addEventListener("click", async () => {
   if (!exportBlob || !objectUrl) return;
   try {
     triggerDownload();
-    setStatus("Download requested. Check your browser's downloads list.");
+    setStatus("Extraction requested. Check your browser's saved files.");
     await clearPendingExport();
   } catch (error) {
-    setStatus("Download failed: " + (error?.message || "unknown error") + ". Try clicking Download file again.");
+    setStatus("Extraction failed: " + (error?.message || "unknown error") + ". Try clicking Save capture again.");
   }
 });
 
