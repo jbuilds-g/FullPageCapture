@@ -257,7 +257,7 @@ saveButton.addEventListener("click", async () => {
     const folder = (settings.saveFolder || "").replace(/\\/g, "/").split("/").filter(part => part && part !== "." && part !== "..").join("/");
     const filename = (folder ? folder + "/" : "") + baseName + "." + extension;
     if (settings.libraryEnabled) {
-      try { await storeLibraryCapture(blob, { id: crypto.randomUUID(), filename, title: capturedTitle, format: extension.toUpperCase(), createdAt: Date.now(), width: capturedCanvas.width, height: capturedCanvas.height, blob }); }
+      try { await storeLibraryCapture({ id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random()), filename, title: capturedTitle, format: extension.toUpperCase(), createdAt: Date.now(), width: capturedCanvas.width, height: capturedCanvas.height, blob }); }
       catch (error) { setStatus("Export prepared, but Library could not save a copy: " + (error?.message || "storage error")); }
     }
     try {
