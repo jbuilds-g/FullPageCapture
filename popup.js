@@ -233,7 +233,7 @@ saveButton.addEventListener("click", async () => {
     const baseName = (settings.filenamePattern || DEFAULT_SETTINGS.filenamePattern)
       .replaceAll("{title}", capturedTitle).replaceAll("{date}", date).replaceAll("{time}", time)
       .replace(/[\\/:*?"<>|]+/g, "_").trim() || capturedTitle;
-    const folder = (settings.saveFolder || "").replace(/\\\\/g, "/").split("/").filter(part => part && part !== "." && part !== "..").join("/");
+    const folder = (settings.saveFolder || "").replace(/\\/g, "/").split("/").filter(part => part && part !== "." && part !== "..").join("/");
     const filename = (folder ? folder + "/" : "") + baseName + "." + extension;
     try {
       const downloadsApi = typeof browser !== "undefined" ? browser.downloads : chrome.downloads;
