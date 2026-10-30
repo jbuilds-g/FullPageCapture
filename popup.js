@@ -219,6 +219,8 @@ function loadImage(src) {
 saveButton.addEventListener("click", async () => {
   if (!capturedCanvas) return;
   saveButton.disabled = true;
+  openExportButton.hidden = true;
+  completedDownloadId = null;
   try {
     const settings = await loadSettings();
     const format = formatSelect.value;
@@ -267,6 +269,15 @@ saveButton.addEventListener("click", async () => {
           }
         };
         downloadsApi.onChanged.addListener(onChanged);
+        const [download] = await downloadsApi.search({ id: completedDownloadId });
+        if (download?.state === "complete") {
+          downloadsApi.onChanged.removeListener(onChanged);
+          setStatus("Extraction completed: " + filename);
+          openExportButton.hidden = false;
+        } else if (download?.state === "interrupted") {
+          downloadsApi.onChanged.removeListener(onChanged);
+          setStatus("Extraction failed: " + (download.error || "The browser interrupted the download."));
+        }
       } finally {
         // Give the browser time to resolve the object URL before releasing it.
         setTimeout(() => URL.revokeObjectURL(objectUrl), 60000);
