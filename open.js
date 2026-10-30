@@ -4,7 +4,7 @@ const previewEl = document.querySelector("#preview");
 
 function readLatestExport() {
   return new Promise((resolve, reject) => {
-    const request = indexedDB.open("fullPageCaptureExports", 1);
+    const request = indexedDB.open("fullPageCaptureExports", 2);
     request.onerror = () => reject(new Error("Could not access the saved capture."));
     request.onsuccess = () => {
       const db = request.result;
