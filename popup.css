@@ -25,3 +25,5 @@ label { display: block; font-size: 12px; color: GrayText; margin-bottom: 6px; }
 select { background: Field; color: FieldText; padding: 8px; border: 1px solid GrayText; }
 .footnote { color: GrayText; font-size: 11px; line-height: 1.45; margin: 17px 0 0; }
 [hidden] { display: none !important; }
+
+#format { margin-bottom: 10px; }
