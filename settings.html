@@ -8,41 +8,48 @@
   <link rel="stylesheet" href="settings.css">
 </head>
 <body class="settings-page">
-  <main class="app settings-app">
-    <header>
-      <div class="brand-mark" aria-hidden="true">▤</div>
-      <div><h1>Settings</h1><p>Configure how captures are saved</p></div>
+  <main class="settings-app">
+    <header class="page-header">
+      <div class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 3.75h8l4 4v12.5H6z"/><path d="M14 3.75v4h4M9 12h6M9 15.5h6"/></svg></div>
+      <div class="brand-copy"><h1>Settings</h1><p>Make FullPageCapture work your way</p></div>
     </header>
-    <section class="settings-section">
-      <label for="default-format">Default export format</label>
-      <select id="default-format">
-        <option value="png">PNG image</option>
-        <option value="jpeg">JPEG image</option>
-        <option value="pdf">PDF document</option>
-      </select>
-      <p class="help">You can still choose a different format each time you save a capture.</p>
+
+    <section class="settings-content" aria-label="Extension settings">
+      <details class="settings-group" open>
+        <summary><span><strong>Capture</strong><small>Choose your preferred capture format</small></span><span class="chevron" aria-hidden="true"></span></summary>
+        <div class="settings-group-content">
+          <div class="setting-row"><div class="setting-copy"><label for="default-format">Default export format</label><p class="help">You can still choose a different format each time you capture.</p></div><select id="default-format"><option value="png">PNG</option><option value="jpeg">JPEG</option><option value="pdf">PDF</option></select></div>
+        </div>
+      </details>
+
+      <details class="settings-group" open>
+        <summary><span><strong>File naming &amp; saving</strong><small>Control filenames and where exports go</small></span><span class="chevron" aria-hidden="true"></span></summary>
+        <div class="settings-group-content">
+          <div class="setting-field"><label for="filename-pattern">Filename pattern</label><input id="filename-pattern" type="text" maxlength="120" spellcheck="false"><p class="help">Use {title}, {date}, and {time}. Example: {title}-{date}</p></div>
+          <div class="setting-field"><label for="save-folder">Save subfolder</label><input id="save-folder" type="text" maxlength="120" placeholder="FullPageCapture"><p class="help">A folder inside your browser's configured save location. Leave blank to use its root.</p></div>
+          <div class="setting-row setting-toggle"><div class="setting-copy"><label for="show-save-dialog">Ask where to save each capture</label><p class="help">Show the browser's save-location picker for every export.</p></div><input id="show-save-dialog" type="checkbox"></div>
+        </div>
+      </details>
+
+      <details class="settings-group" open>
+        <summary><span><strong>Capture Library</strong><small>Keep completed captures on this device</small></span><span class="chevron" aria-hidden="true"></span></summary>
+        <div class="settings-group-content">
+          <div class="setting-row setting-toggle"><div class="setting-copy"><label for="library-enabled">Save captures to Library</label><p class="help">Turning this off stops new captures from being stored. Existing captures stay available.</p></div><input id="library-enabled" type="checkbox"></div>
+        </div>
+      </details>
+
+      <details class="settings-group">
+        <summary><span><strong>Backup &amp; Restore</strong><small>Export or restore your settings and saved captures</small></span><span class="chevron" aria-hidden="true"></span></summary>
+        <div class="settings-group-content">
+          <p class="help backup-description">A backup includes extension settings, saved captures, Library data, and metadata.</p>
+          <button id="create-backup" class="secondary" type="button">Export full backup</button>
+          <div class="backup-import"><label for="backup-file">Restore from backup</label><input id="backup-file" type="file" accept=".json,application/json"><p id="backup-preview" class="help" aria-live="polite">Choose a backup file to inspect it before restoring.</p><button id="restore-backup" class="primary" type="button" disabled>Restore backup</button></div>
+          <div id="backup-status" class="inline-status" role="status" aria-live="polite"></div>
+        </div>
+      </details>
     </section>
-    <section class="settings-section">
-      <label for="filename-pattern">Filename pattern</label>
-      <input id="filename-pattern" type="text" maxlength="120" spellcheck="false">
-      <p class="help">Use {title}, {date}, and {time}. Example: {title}-{date}</p>
-    </section>
-    <section class="settings-section">
-      <label for="save-folder">Save subfolder</label>
-      <input id="save-folder" type="text" maxlength="120" placeholder="FullPageCapture">
-      <p class="help">A folder inside your browser's configured downloads location. Leave blank to use its root.</p>
-    </section>
-    <section class="settings-section setting-toggle">
-      <div><label for="show-save-dialog">Ask where to save each capture</label><p class="help">Show the browser's save-location picker for every export. Chromium may also show it when its own Settings → Downloads → Ask where to save each file option is enabled. Extensions cannot override that browser-wide setting.</p></div>
-      <input id="show-save-dialog" type="checkbox">
-    </section>
-    <section class="settings-section setting-toggle">
-      <div><label for="library-enabled">Capture Library</label><p class="help">Automatically store each completed capture in your local Library. Turning this off stops saving new captures but keeps existing ones.</p></div>
-      <input id="library-enabled" type="checkbox">
-    </section>
-    <section class="settings-section backup-section"><h2>Backup &amp; Restore</h2><p class="help">Back up all extension settings, saved captures, Library data, and metadata to a file on your device.</p><button id="create-backup" class="secondary" type="button">Export full backup</button><div class="backup-import"><label for="backup-file">Restore from backup</label><input id="backup-file" type="file" accept=".json,application/json"><p id="backup-preview" class="help" aria-live="polite">Choose a backup file to inspect it before restoring.</p><button id="restore-backup" class="primary" type="button" disabled>Restore backup</button></div><div id="backup-status" class="status" role="status" aria-live="polite"></div></section>
-    <div id="settings-status" class="status" role="status" aria-live="polite">Settings are stored on this device.</div>
-    <button id="save-settings" class="primary">Save settings</button>
+
+    <div class="settings-actions"><div id="settings-status" class="inline-status" role="status" aria-live="polite">Settings are stored on this device.</div><button id="save-settings" class="primary" type="button">Save settings</button></div>
   </main>
   <script src="settings.js"></script>
   <script src="backup.js"></script>
