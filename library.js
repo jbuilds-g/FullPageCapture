@@ -7,7 +7,47 @@ function updateDescription(){description.textContent=toggle.checked?"Enabled. Ne
 function render(items){list.replaceChildren();if(!items.length){const e=document.createElement("div");e.className="empty-state";e.textContent=toggle.checked?"Your Library is empty. Capture a page to see it here.":"No saved captures yet. Enable the Library to retain future captures.";list.append(e);return;}for(const item of items){const card=document.createElement("article");card.className="capture-card";const preview=document.createElement("div");preview.className="capture-preview";if(item.blob?.type?.startsWith("image/")){const img=document.createElement("img"),url=URL.createObjectURL(item.blob);img.src=url;img.alt=item.title||"Capture preview";img.addEventListener("load",()=>URL.revokeObjectURL(url),{once:true});preview.append(img);}else{const label=document.createElement("span");label.textContent="PDF";preview.append(label);}const details=document.createElement("div");details.className="capture-details";const title=document.createElement("h2");title.className="capture-title";title.textContent=item.filename||item.title||"Saved capture";const meta=document.createElement("p");meta.className="capture-meta";meta.textContent=[item.format||"FILE",new Intl.DateTimeFormat(undefined,{dateStyle:"medium",timeStyle:"short"}).format(new Date(item.createdAt)),item.width&&item.height?item.width+" × "+item.height+" px":""].filter(Boolean).join(" · ");const actions=document.createElement("div");actions.className="capture-actions";const button=(label,fn,cls="secondary")=>{const b=document.createElement("button");b.type="button";b.className=cls;b.textContent=label;b.addEventListener("click",fn);return b;};actions.append(button("Open",()=>openItem(item)),button("Export",()=>exportItem(item)),button("Delete",()=>deleteItem(item),"delete"));details.append(title,meta,actions);card.append(preview,details);list.append(card);}}
 async function refresh(){try{render(await readAll());}catch(e){status.textContent=e.message||"Could not load Library.";}}
 async function openItem(item){try{const db=await dbOpen();await new Promise((resolve,reject)=>{const tx=db.transaction("exports","readwrite");tx.objectStore("exports").put({blob:item.blob,filename:item.filename},"latest");tx.oncomplete=resolve;tx.onerror=()=>reject(new Error("Could not prepare preview."));});db.close();await chrome.tabs.create({url:chrome.runtime.getURL("open.html")});}catch(e){status.textContent=e.message;}}
-async function exportItem(item){let url;try{const s={...defaults,...await chrome.storage.local.get(defaults)};url=URL.createObjectURL(item.blob);await chrome.downloads.download({url,filename:item.filename||"capture",conflictAction:"uniquify",saveAs:Boolean(s.showSaveDialog)});status.textContent="Export requested: "+item.filename;}catch(e){status.textContent="Could not export capture: "+e.message;}finally{if(url)setTimeout(()=>URL.revokeObjectURL(url),60000);}}
+async function exportItem(item) {
+  let url;
+  let downloadId;
+  let onChanged;
+  const downloads = chrome.downloads;
+  try {
+    const s = {...defaults, ...await chrome.storage.local.get(defaults)};
+    url = URL.createObjectURL(item.blob);
+    downloadId = await downloads.download({
+      url,
+      filename: item.filename || "capture",
+      conflictAction: "uniquify",
+      saveAs: Boolean(s.showSaveDialog)
+    });
+    status.textContent = "Export started: " + (item.filename || "capture");
+    onChanged = delta => {
+      if (delta.id !== downloadId) return;
+      if (delta.state?.current === "complete") {
+        status.textContent = "Export completed: " + (item.filename || "capture");
+        downloads.onChanged.removeListener(onChanged);
+      } else if (delta.state?.current === "interrupted") {
+        status.textContent = "Export failed: " + (delta.error?.current || "The browser interrupted the export.");
+        downloads.onChanged.removeListener(onChanged);
+      }
+    };
+    downloads.onChanged.addListener(onChanged);
+    const [latest] = await downloads.search({id: downloadId});
+    if (latest?.state === "complete") {
+      status.textContent = "Export completed: " + (item.filename || "capture");
+      downloads.onChanged.removeListener(onChanged);
+    } else if (latest?.state === "interrupted") {
+      status.textContent = "Export failed: " + (latest.error || "The browser interrupted the export.");
+      downloads.onChanged.removeListener(onChanged);
+    }
+  } catch (e) {
+    if (onChanged) downloads.onChanged.removeListener(onChanged);
+    status.textContent = "Could not export capture: " + (e?.message || "Unknown error");
+  } finally {
+    if (url) setTimeout(() => URL.revokeObjectURL(url), 60000);
+  }
+}
 async function deleteItem(item){if(!confirm("Delete this capture from your Library? The exported file on your device will not be affected."))return;try{const db=await dbOpen();await new Promise((resolve,reject)=>{const tx=db.transaction("library","readwrite");tx.objectStore("library").delete(item.id);tx.oncomplete=resolve;tx.onerror=()=>reject(new Error("Could not delete capture."));});db.close();status.textContent="Capture deleted from Library.";await refresh();}catch(e){status.textContent=e.message;}}
 toggle.addEventListener("change",async()=>{toggle.disabled=true;try{await chrome.storage.local.set({libraryEnabled:toggle.checked});updateDescription();status.textContent=toggle.checked?"Library enabled. New captures will be saved here.":"Library disabled. Existing captures have been kept."; }catch(e){toggle.checked=!toggle.checked;status.textContent="Could not update setting: "+e.message;}finally{toggle.disabled=false;}});
 (async()=>{try{const s={...defaults,...await chrome.storage.local.get(defaults)};toggle.checked=Boolean(s.libraryEnabled);updateDescription();await refresh();if(!toggle.checked)status.textContent="Library is disabled. Existing captures remain available.";}catch(e){status.textContent=e.message;}})();
