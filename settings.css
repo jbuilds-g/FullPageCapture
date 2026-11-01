@@ -9,3 +9,5 @@
 #save-settings { margin-top: 16px; }
 
 .library-setting { border-bottom: 0; }
+
+.backup-section h2{margin:0 0 8px;font-size:17px}.backup-section>button{margin-top:14px}.backup-import{display:grid;gap:8px;margin-top:22px;padding-top:18px;border-top:1px solid color-mix(in srgb,CanvasText 14%,transparent)}.backup-import label{color:CanvasText;font-size:13px;font-weight:600}.backup-import input[type=file]{width:100%;color:FieldText;font:inherit;font-size:12px}.backup-import button{margin-top:4px}#backup-status{min-height:0;padding-top:8px}
