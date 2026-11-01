@@ -1,3 +1,5 @@
+(() => {
+"use strict";
 const FORMAT="fullpagecapture-backup";
 const VERSION=1;
 const createButton=document.querySelector("#create-backup");
@@ -17,3 +19,4 @@ fileInput.addEventListener("change",async()=>{selectedBackup=null;restoreButton.
 async function restoreDatabase(data){const db=await openDb();try{await new Promise((resolve,reject)=>{const tx=db.transaction(["exports","library"],"readwrite"),ex=tx.objectStore("exports"),lib=tx.objectStore("library");ex.clear();lib.clear();for(const x of data.database.exports)ex.put(unpack(x.value),x.key);for(const x of data.database.library)lib.put(unpack(x.value));tx.oncomplete=resolve;tx.onerror=()=>reject(new Error("Could not restore capture data."));tx.onabort=()=>reject(new Error("Capture restore was interrupted."));});}finally{db.close();}}
 restoreButton.addEventListener("click",async()=>{if(!selectedBackup)return;if(!confirm("Restore this backup? This replaces ALL current extension settings, Library captures, and saved capture data. This cannot be undone. Export a backup of your current data first if you may need it."))return;restoreButton.disabled=true;createButton.disabled=true;status.textContent="Restoring backup…";try{await restoreDatabase(selectedBackup);await chrome.storage.local.clear();await chrome.storage.local.set(selectedBackup.settings);preview.textContent="Restored "+selectedBackup.database.library.length+" Library captures and "+selectedBackup.database.exports.length+" saved records. Reload extension pages to apply restored settings.";status.textContent="Backup restored successfully.";selectedBackup=null;fileInput.value="";}catch(e){status.textContent="Restore failed: "+(e.message||"Unknown error");}finally{restoreButton.disabled=!selectedBackup;createButton.disabled=false;}});
 createButton.addEventListener("click",createBackup);
+})();
