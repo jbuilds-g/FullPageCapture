@@ -37,7 +37,7 @@
       <input id="show-save-dialog" type="checkbox">
     </section>
     <section class="settings-section setting-toggle">
-      <div><label for="library-enabled">Capture Library</label><p class="help">Keep a local copy of each completed export in your Library. Turning this off stops saving new copies but keeps existing captures.</p></div>
+      <div><label for="library-enabled">Capture Library</label><p class="help">Automatically store each completed capture in your local Library. Turning this off stops saving new captures but keeps existing ones.</p></div>
       <input id="library-enabled" type="checkbox">
     </section>
     <section class="settings-section backup-section"><h2>Backup &amp; Restore</h2><p class="help">Back up all extension settings, saved captures, Library data, and metadata to a file on your device.</p><button id="create-backup" class="secondary" type="button">Export full backup</button><div class="backup-import"><label for="backup-file">Restore from backup</label><input id="backup-file" type="file" accept=".json,application/json"><p id="backup-preview" class="help" aria-live="polite">Choose a backup file to inspect it before restoring.</p><button id="restore-backup" class="primary" type="button" disabled>Restore backup</button></div><div id="backup-status" class="status" role="status" aria-live="polite"></div></section>
