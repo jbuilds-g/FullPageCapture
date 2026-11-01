@@ -1,6 +1,26 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Library · FullPageCapture</title><link rel="stylesheet" href="popup.css"><link rel="stylesheet" href="library.css"></head>
-<body class="library-page"><main class="library-app">
-<header><div class="brand-mark" aria-hidden="true">▤</div><div class="brand-copy"><h1>Capture Library</h1><p>Your saved captures, stored on this device</p></div><button id="settings" class="icon-button" type="button" aria-label="Settings">⚙</button></header>
-<section class="library-control"><div><h2>Save captures to Library</h2><p id="toggle-description">Loading Library settings…</p></div><label class="switch" aria-label="Enable Capture Library"><input id="library-enabled" type="checkbox"><span></span></label></section>
-<div id="status" class="library-status" role="status" aria-live="polite"></div><section id="captures" class="library-grid" aria-label="Saved captures"></section></main><script src="library.js"></script></body></html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Library · FullPageCapture</title>
+  <link rel="stylesheet" href="popup.css">
+  <link rel="stylesheet" href="library.css">
+</head>
+<body class="library-page">
+  <main class="library-app">
+    <header class="page-header">
+      <div class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 3.75h8l4 4v12.5H6z"/><path d="M14 3.75v4h4M9 12h6M9 15.5h6"/></svg></div>
+      <div class="brand-copy"><h1>Capture Library</h1><p>Your saved captures, stored on this device</p></div>
+      <button id="settings" class="page-icon-button" type="button" aria-label="Open settings" title="Settings"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z"/><path d="m19.2 13.7 1.1.9-1.5 2.6-1.4-.5a7.8 7.8 0 0 1-1.7 1l-.2 1.5h-3l-.3-1.5a7.8 7.8 0 0 1-1.7-1l-1.4.5-1.5-2.6 1.1-.9a7.1 7.1 0 0 1 0-2l-1.1-.9 1.5-2.6 1.4.5a7.8 7.8 0 0 1 1.7-1l.3-1.5h3l.2 1.5a7.8 7.8 0 0 1 1.7 1l1.4-.5 1.5 2.6-1.1.9a7.1 7.1 0 0 1 0 2Z"/></svg></button>
+    </header>
+    <section class="library-control">
+      <div><h2>Save captures to Library</h2><p id="toggle-description">Loading Library settings…</p></div>
+      <label class="switch" aria-label="Enable Capture Library"><input id="library-enabled" type="checkbox"><span></span></label>
+    </section>
+    <div id="status" class="library-status" role="status" aria-live="polite"></div>
+    <section id="captures" class="library-grid" aria-label="Saved captures"></section>
+  </main>
+  <script src="library.js"></script>
+</body>
+</html>
