@@ -21,6 +21,7 @@ button:focus-visible, select:focus-visible, input:focus-visible, summary:focus-v
 .popup-header { display: flex; align-items: center; gap: 12px; margin-bottom: 23px; }
 .brand-mark { width: 42px; height: 42px; flex: 0 0 42px; display: grid; place-items: center; border-radius: 13px; background: var(--accent); color: white; }
 .brand-mark svg { width: 25px; height: 25px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.brand-mark img { display: block; width: 100%; height: 100%; object-fit: contain; }
 .brand-copy { min-width: 0; }
 h1 { margin: 0 0 3px; font-size: 16px; line-height: 1.25; font-weight: 720; letter-spacing: -.025em; }
 .brand-copy p { margin: 0; color: var(--muted); font-size: 12px; }
