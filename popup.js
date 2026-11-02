@@ -139,6 +139,7 @@ captureButton.addEventListener("click", async () => {
     }
 
     setStatus("Capturing full page…");
+    await delay(550);
     const firstShot = await chrome.tabs.captureVisibleTab(tab.windowId, { format: "png" });
     const firstImage = await loadImage(firstShot);
     const scale = firstImage.naturalWidth / page.viewportWidth;
