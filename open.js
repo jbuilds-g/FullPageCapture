@@ -1,5 +1,4 @@
 const statusEl = document.querySelector("#status");
-const filenameEl = document.querySelector("#filename");
 const previewEl = document.querySelector("#preview");
 
 function readLatestExport() {
@@ -35,7 +34,6 @@ async function initialize() {
       statusEl.textContent = "No saved capture preview is available. Save a capture first.";
       return;
     }
-    filenameEl.textContent = item.filename || "";
     const url = URL.createObjectURL(item.blob);
     if (item.blob.type === "application/pdf") {
       const frame = document.createElement("iframe");
@@ -53,7 +51,7 @@ async function initialize() {
       statusEl.textContent = "This file type cannot be previewed in the browser.";
       return;
     }
-    statusEl.textContent = "Capture opened.";
+    statusEl.textContent = "";
     window.addEventListener("pagehide", () => URL.revokeObjectURL(url), { once: true });
   } catch (error) {
     statusEl.textContent = error?.message || "Could not open the saved capture.";
