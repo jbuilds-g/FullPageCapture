@@ -18,6 +18,11 @@ function validate(data){
   if(!data||data.format!==FORMAT||data.version!==VERSION)throw new Error("Unsupported FullPageCapture backup.");
   if(typeof data.createdAt!=="string"||!Number.isFinite(Date.parse(data.createdAt)))throw new Error("Backup date is invalid.");
   if(!data.settings||typeof data.settings!=="object"||Array.isArray(data.settings))throw new Error("Backup settings are invalid.");
+  const settingTypes={defaultFormat:"string",filenamePattern:"string",saveFolder:"string",showSaveDialog:"boolean",libraryEnabled:"boolean"};
+  for(const [key,value] of Object.entries(data.settings)){
+    if(!(key in settingTypes)||typeof value!==settingTypes[key])throw new Error("Backup contains an unsupported setting.");
+  }
+  if(data.settings.defaultFormat&&!["png","jpeg","pdf"].includes(data.settings.defaultFormat))throw new Error("Backup contains an invalid export format.");
   if(!data.database||!Array.isArray(data.database.exports)||!Array.isArray(data.database.library))throw new Error("Backup capture data is missing.");
   const validKey=key=>typeof key==="string"||typeof key==="number"||Array.isArray(key);
   const validatePacked=(value,depth=0)=>{
@@ -40,6 +45,7 @@ function validate(data){
   const libraryIds=new Set();
   for(const item of data.database.library){
     if(!item||!item.value||typeof item.value!=="object"||typeof item.value.id!=="string"||!item.value.id||libraryIds.has(item.value.id)||!("blob" in item.value))throw new Error("Backup contains an invalid Library capture.");
+    if(!item.value.blob||typeof item.value.blob!=="object"||item.value.blob.__fpcBackupType!=="Blob")throw new Error("Backup contains an invalid Library file.");
     libraryIds.add(item.value.id);validatePacked(item.value);
   }
   validatePacked(data.settings);
