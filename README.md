@@ -18,7 +18,7 @@ Capture an entire web page and export it as **PNG, JPEG, or PDF**. FullPageCaptu
 
 ## Browser support
 
-The project targets **Google Chrome** and **Mozilla Firefox**. The packaging script creates a separate ZIP for each browser. Test each package in its target browser before distributing it; browser restrictions and API differences may affect capture or export behavior.
+The project targets **Google Chrome** and **Mozilla Firefox**. The build script creates a separate ZIP for each browser using its corresponding manifest. Test each package in its target browser before distributing it; browser restrictions and API differences may affect capture or export behavior.
 
 ## Install for development
 
@@ -33,28 +33,24 @@ The project targets **Google Chrome** and **Mozilla Firefox**. The packaging scr
 
 1. Open `about:debugging#/runtime/this-firefox`.
 2. Select **Load Temporary Add-on…**.
-3. Choose the project's `manifest.json`.
+3. Choose `manifest.firefox.json`.
 
 Temporary Firefox add-ons are removed when Firefox closes. For regular use, install a signed release from the Firefox Add-ons site.
 
 ## Build release packages
 
-The packaging script uses only Python's standard library. Python 3.9 or newer is required.
-
-Run from the repository root:
+Node.js is required. Run from the repository root:
 
 ```sh
-python tools/package.py
+node build.js
 ```
 
-This creates separate ZIP archives for Chrome and Firefox in `dist/`. To build only one browser:
+The script creates these ZIP files in the repository root:
 
-```sh
-python tools/package.py --browser chrome
-python tools/package.py --browser firefox
-```
+- `FullPageCapture-chrome-v1.0.0.zip`
+- `FullPageCapture-firefox-v1.0.0.zip`
 
-The script validates the manifest and required files, creates clean browser-specific packages, and does not modify the source manifest. Generated files in `dist/` are build output, not source files.
+It stages each browser package in a temporary `dist/` folder, copies the matching manifest as `manifest.json`, creates the ZIP archives, and removes the temporary folder afterward. The source manifests are not modified.
 
 ## Permissions
 
