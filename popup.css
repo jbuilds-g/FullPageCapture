@@ -68,6 +68,11 @@ summary:focus-visible {
   background: var(--accent);
   color: white;
 }
+/* The popup icon already contains its own artwork and background. */
+.popup-header .brand-mark {
+  background: transparent;
+  color: inherit;
+}
 .brand-mark svg {
   width: 25px;
   height: 25px;
