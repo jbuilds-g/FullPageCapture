@@ -20,23 +20,6 @@ Capture an entire web page and export it as **PNG, JPEG, or PDF**. FullPageCaptu
 
 The project targets **Google Chrome** and **Mozilla Firefox**. The build script creates a separate ZIP for each browser using its corresponding manifest. Test each package in its target browser before distributing it; browser restrictions and API differences may affect capture or export behavior.
 
-## Install for development
-
-### Chrome
-
-1. Open `chrome://extensions`.
-2. Enable **Developer mode**.
-3. Select **Load unpacked**.
-4. Choose the project folder.
-
-### Firefox
-
-1. Open `about:debugging#/runtime/this-firefox`.
-2. Select **Load Temporary Add-on…**.
-3. Choose `manifest.firefox.json`.
-
-Temporary Firefox add-ons are removed when Firefox closes. For regular use, install a signed release from the Firefox Add-ons site.
-
 ## Build release packages
 
 Node.js is required. Run from the repository root:
