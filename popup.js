@@ -1,5 +1,5 @@
 const captureButton = document.querySelector("#capture");
-const saveButton = document.querySelector("#save");
+const saveButton = document.querySelector("#export");
 const formatSelect = document.querySelector("#format");
 const statusEl = document.querySelector("#status");
 const progressWrap = document.querySelector("#progress-wrap");
@@ -317,6 +317,9 @@ captureButton.addEventListener("click", async () => {
           height: canvas.height,
           blob: libraryBlob,
         });
+            await storeLatestExport(libraryBlob, libraryFilename);
+        latestExportAvailable = true;
+        openExportButton.hidden = false;
         setStatus(
           "Capture ready and added to Library: " +
             canvas.width +
