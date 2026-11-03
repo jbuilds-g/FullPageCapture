@@ -1,2 +1,4 @@
 # Generated browser release packages
 /dist/
+*.zip
+.gitignore
