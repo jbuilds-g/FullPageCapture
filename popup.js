@@ -83,6 +83,8 @@ captureButton.addEventListener("click", async () => {
   formatSelect.disabled = true;
   capturedFormat = formatSelect.value;
   exportOptions.hidden = true;
+  openExportButton.hidden = true;
+  latestExportAvailable = false;
   capturedCanvas = null;
   setProgress(0);
   setStatus("Preparing page…");
@@ -317,7 +319,7 @@ captureButton.addEventListener("click", async () => {
           height: canvas.height,
           blob: libraryBlob,
         });
-            await storeLatestExport(libraryBlob, libraryFilename);
+        await storeLatestExport(libraryBlob, libraryFilename);
         latestExportAvailable = true;
         openExportButton.hidden = false;
         setStatus(
