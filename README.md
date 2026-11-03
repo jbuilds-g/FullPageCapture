@@ -1,3 +1,7 @@
+<div align="center">
+  <img src="icons/wide_icon.webp" width="120" alt="FullPageCapture Icon" />
+</div>
+
 # FullPageCapture
 
 > FullPageCapture is a lightweight Chrome extension for capturing an entire web page and exporting it as PNG, JPEG, or PDF.
@@ -39,7 +43,7 @@
 - `activeTab`: access the tab after the user invokes the extension.
 - `scripting`: measure and scroll the active page.
 - `downloads`: save the exported file.
-  
+
 ---
 
 > [!NOTE]

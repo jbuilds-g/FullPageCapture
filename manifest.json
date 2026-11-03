@@ -3,12 +3,7 @@
   "name": "FullPageCapture",
   "version": "1.0.0",
   "description": "Capture entire web pages and export them as PNG, JPEG, or PDF.",
-  "permissions": [
-    "activeTab",
-    "scripting",
-    "downloads",
-    "storage"
-  ],
+  "permissions": ["activeTab", "scripting", "downloads", "storage"],
   "options_ui": {
     "page": "settings.html",
     "open_in_tab": true

@@ -1,45 +1,75 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>FullPageCapture</title>
-  <link rel="stylesheet" href="popup.css">
-</head>
-<body class="popup-page">
-  <main class="popup-app">
-    <header class="popup-header">
-      <div class="brand-mark" aria-hidden="true"><img src="icons/icon-48.png" alt=""></div>
-      <div class="brand-copy"><h1>FullPageCapture</h1><p>Capture the entire page. Simply.</p></div>
-    </header>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>FullPageCapture</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body class="popup-page">
+    <main class="popup-app">
+      <header class="popup-header">
+        <div class="brand-mark" aria-hidden="true">
+          <img src="icons/icon-48.png" alt="" />
+        </div>
+        <div class="brand-copy">
+          <h1>FullPageCapture</h1>
+          <p>Capture the entire page. Simply.</p>
+        </div>
+      </header>
 
-    <section class="capture-panel" aria-labelledby="capture-heading">
-      <div class="section-heading">
-        <h2 id="capture-heading">Choose a format</h2>
-        <p>How would you like to save this page?</p>
-      </div>
-      <label class="sr-only" for="format">Capture format</label>
-      <select id="format" class="format-select">
-        <option value="png">PNG</option>
-        <option value="jpeg">JPEG</option>
-        <option value="pdf">PDF</option>
-      </select>
-      <button id="capture" class="primary capture-button" type="button">Capture full page</button>
-      <div id="progress-wrap" class="progress-wrap" hidden><div id="progress" class="progress"></div></div>
-      <div id="status" class="status" role="status" aria-live="polite"></div>
-      <section id="export-options" class="export-options" hidden>
-        <button id="save" class="primary save-button" type="button">Save capture</button>
+      <section class="capture-panel" aria-labelledby="capture-heading">
+        <div class="section-heading">
+          <h2 id="capture-heading">Choose a format</h2>
+          <p>How would you like to save this page?</p>
+        </div>
+        <label class="sr-only" for="format">Capture format</label>
+        <select id="format" class="format-select">
+          <option value="png">PNG</option>
+          <option value="jpeg">JPEG</option>
+          <option value="pdf">PDF</option>
+        </select>
+        <button id="capture" class="primary capture-button" type="button">
+          Capture full page
+        </button>
+        <div id="progress-wrap" class="progress-wrap" hidden>
+          <div id="progress" class="progress"></div>
+        </div>
+        <div id="status" class="status" role="status" aria-live="polite"></div>
+        <section id="export-options" class="export-options" hidden>
+          <button id="save" class="primary save-button" type="button">
+            Save capture
+          </button>
+        </section>
+        <button
+          id="open-export"
+          class="text-action open-export"
+          type="button"
+          hidden
+        >
+          Open saved file
+        </button>
       </section>
-      <button id="open-export" class="text-action open-export" type="button" hidden>Open saved file</button>
-    </section>
 
-    <nav class="popup-footer" aria-label="Extension pages">
-      <button id="open-library" class="footer-link" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5h4v14H4zM10 4h4v15.5h-4zM16 6h4v13.5h-4z"/></svg>Library</button>
-      <span class="footer-divider" aria-hidden="true"></span>
-      <button id="settings" class="footer-link" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h6M14 7h6M4 17h2M10 17h10" /><circle cx="12" cy="7" r="2" /><circle cx="8" cy="17" r="2" /></svg>Settings</button>
-    </nav>
-    <p class="footnote">Some browser pages and protected content cannot be captured.</p>
-  </main>
-  <script src="popup.js"></script>
-</body>
+      <nav class="popup-footer" aria-label="Extension pages">
+        <button id="open-library" class="footer-link" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 5.5h4v14H4zM10 4h4v15.5h-4zM16 6h4v13.5h-4z" /></svg
+          >Library
+        </button>
+        <span class="footer-divider" aria-hidden="true"></span>
+        <button id="settings" class="footer-link" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 7h6M14 7h6M4 17h2M10 17h10" />
+            <circle cx="12" cy="7" r="2" />
+            <circle cx="8" cy="17" r="2" /></svg
+          >Settings
+        </button>
+      </nav>
+      <p class="footnote">
+        Some browser pages and protected content cannot be captured.
+      </p>
+    </main>
+    <script src="popup.js"></script>
+  </body>
 </html>

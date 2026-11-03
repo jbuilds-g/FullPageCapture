@@ -1,55 +1,254 @@
-const toggle=document.querySelector("#library-enabled"),description=document.querySelector("#toggle-description"),status=document.querySelector("#status"),list=document.querySelector("#captures");
+const toggle = document.querySelector("#library-enabled"),
+  description = document.querySelector("#toggle-description"),
+  status = document.querySelector("#status"),
+  list = document.querySelector("#captures");
 let toastTimer;
-const defaults={defaultFormat:"png",filenamePattern:"{title}-full-page",saveFolder:"FullPageCapture",showSaveDialog:false,libraryEnabled:false};
-document.querySelector("#settings").addEventListener("click",()=>chrome.runtime.openOptionsPage());
-function dbOpen(){return new Promise((resolve,reject)=>{const r=indexedDB.open("fullPageCaptureExports",2);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains("exports"))r.result.createObjectStore("exports");if(!r.result.objectStoreNames.contains("library"))r.result.createObjectStore("library",{keyPath:"id"});};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(new Error("Could not access local Library storage."));});}
-async function readAll(){const db=await dbOpen();return new Promise((resolve,reject)=>{if(!db.objectStoreNames.contains("library")){db.close();resolve([]);return;}const r=db.transaction("library","readonly").objectStore("library").getAll();r.onsuccess=()=>{db.close();resolve((r.result||[]).sort((a,b)=>b.createdAt-a.createdAt));};r.onerror=()=>{db.close();reject(new Error("Could not read saved captures."));};});}
-function updateDescription(){description.textContent=toggle.checked?"Enabled. New captures are saved here. Turning this off keeps existing captures.":"Disabled. Existing captures remain available, but new captures will not be added.";}
-function render(items){list.replaceChildren();if(!items.length){const e=document.createElement("div");e.className="empty-state";e.textContent=toggle.checked?"Your Library is empty. Capture a page to see it here.":"No saved captures yet. Enable the Library to retain future captures.";list.append(e);return;}for(const item of items){const card=document.createElement("article");card.className="capture-card";const preview=document.createElement("div");preview.className="capture-preview";if(item.blob?.type?.startsWith("image/")){const img=document.createElement("img"),url=URL.createObjectURL(item.blob);img.src=url;img.alt=item.title||"Capture preview";img.addEventListener("load",()=>URL.revokeObjectURL(url),{once:true});preview.append(img);}else{const label=document.createElement("span");label.textContent="PDF";preview.append(label);}const details=document.createElement("div");details.className="capture-details";const title=document.createElement("h2");title.className="capture-title";title.textContent=item.filename||item.title||"Saved capture";const meta=document.createElement("p");meta.className="capture-meta";meta.textContent=[item.format||"FILE",new Intl.DateTimeFormat(undefined,{dateStyle:"medium",timeStyle:"short"}).format(new Date(item.createdAt)),item.width&&item.height?item.width+" × "+item.height+" px":""].filter(Boolean).join(" · ");const actions=document.createElement("div");actions.className="capture-actions";const button=(label,fn,cls="secondary")=>{const b=document.createElement("button");b.type="button";b.className=cls;b.textContent=label;b.addEventListener("click",fn);return b;};actions.append(button("Open",()=>openItem(item)),button("Export",()=>exportItem(item)),button("Delete",()=>deleteItem(item),"delete"));details.append(title,meta,actions);card.append(preview,details);list.append(card);}}
-async function refresh(){try{render(await readAll());status.textContent="";}catch(e){status.textContent=e.message||"Could not load Library.";}}
-function showToast(message){status.textContent=message;status.classList.add("toast-visible");clearTimeout(toastTimer);toastTimer=setTimeout(()=>{status.classList.remove("toast-visible");status.textContent="";},1000);}
-async function openItem(item){try{const db=await dbOpen();await new Promise((resolve,reject)=>{const tx=db.transaction("exports","readwrite");tx.objectStore("exports").put({blob:item.blob,filename:item.filename},"latest");tx.oncomplete=resolve;tx.onerror=()=>reject(new Error("Could not prepare preview."));});db.close();await chrome.tabs.create({url:chrome.runtime.getURL("open.html")});}catch(e){status.textContent=e.message;}}
+const defaults = {
+  defaultFormat: "png",
+  filenamePattern: "{title}-full-page",
+  saveFolder: "FullPageCapture",
+  showSaveDialog: false,
+  libraryEnabled: false,
+};
+document
+  .querySelector("#settings")
+  .addEventListener("click", () => chrome.runtime.openOptionsPage());
+function dbOpen() {
+  return new Promise((resolve, reject) => {
+    const r = indexedDB.open("fullPageCaptureExports", 2);
+    r.onupgradeneeded = () => {
+      if (!r.result.objectStoreNames.contains("exports"))
+        r.result.createObjectStore("exports");
+      if (!r.result.objectStoreNames.contains("library"))
+        r.result.createObjectStore("library", { keyPath: "id" });
+    };
+    r.onsuccess = () => resolve(r.result);
+    r.onerror = () =>
+      reject(new Error("Could not access local Library storage."));
+  });
+}
+async function readAll() {
+  const db = await dbOpen();
+  return new Promise((resolve, reject) => {
+    if (!db.objectStoreNames.contains("library")) {
+      db.close();
+      resolve([]);
+      return;
+    }
+    const r = db
+      .transaction("library", "readonly")
+      .objectStore("library")
+      .getAll();
+    r.onsuccess = () => {
+      db.close();
+      resolve((r.result || []).sort((a, b) => b.createdAt - a.createdAt));
+    };
+    r.onerror = () => {
+      db.close();
+      reject(new Error("Could not read saved captures."));
+    };
+  });
+}
+function updateDescription() {
+  description.textContent = toggle.checked
+    ? "Enabled. New captures are saved here. Turning this off keeps existing captures."
+    : "Disabled. Existing captures remain available, but new captures will not be added.";
+}
+function render(items) {
+  list.replaceChildren();
+  if (!items.length) {
+    const e = document.createElement("div");
+    e.className = "empty-state";
+    e.textContent = toggle.checked
+      ? "Your Library is empty. Capture a page to see it here."
+      : "No saved captures yet. Enable the Library to retain future captures.";
+    list.append(e);
+    return;
+  }
+  for (const item of items) {
+    const card = document.createElement("article");
+    card.className = "capture-card";
+    const preview = document.createElement("div");
+    preview.className = "capture-preview";
+    if (item.blob?.type?.startsWith("image/")) {
+      const img = document.createElement("img"),
+        url = URL.createObjectURL(item.blob);
+      img.src = url;
+      img.alt = item.title || "Capture preview";
+      img.addEventListener("load", () => URL.revokeObjectURL(url), {
+        once: true,
+      });
+      preview.append(img);
+    } else {
+      const label = document.createElement("span");
+      label.textContent = "PDF";
+      preview.append(label);
+    }
+    const details = document.createElement("div");
+    details.className = "capture-details";
+    const title = document.createElement("h2");
+    title.className = "capture-title";
+    title.textContent = item.filename || item.title || "Saved capture";
+    const meta = document.createElement("p");
+    meta.className = "capture-meta";
+    meta.textContent = [
+      item.format || "FILE",
+      new Intl.DateTimeFormat(undefined, {
+        dateStyle: "medium",
+        timeStyle: "short",
+      }).format(new Date(item.createdAt)),
+      item.width && item.height ? item.width + " × " + item.height + " px" : "",
+    ]
+      .filter(Boolean)
+      .join(" · ");
+    const actions = document.createElement("div");
+    actions.className = "capture-actions";
+    const button = (label, fn, cls = "secondary") => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = cls;
+      b.textContent = label;
+      b.addEventListener("click", fn);
+      return b;
+    };
+    actions.append(
+      button("Open", () => openItem(item)),
+      button("Export", () => exportItem(item)),
+      button("Delete", () => deleteItem(item), "delete"),
+    );
+    details.append(title, meta, actions);
+    card.append(preview, details);
+    list.append(card);
+  }
+}
+async function refresh() {
+  try {
+    render(await readAll());
+    status.textContent = "";
+  } catch (e) {
+    status.textContent = e.message || "Could not load Library.";
+  }
+}
+function showToast(message) {
+  status.textContent = message;
+  status.classList.add("toast-visible");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => {
+    status.classList.remove("toast-visible");
+    status.textContent = "";
+  }, 1000);
+}
+async function openItem(item) {
+  try {
+    const db = await dbOpen();
+    await new Promise((resolve, reject) => {
+      const tx = db.transaction("exports", "readwrite");
+      tx.objectStore("exports").put(
+        { blob: item.blob, filename: item.filename },
+        "latest",
+      );
+      tx.oncomplete = resolve;
+      tx.onerror = () => reject(new Error("Could not prepare preview."));
+    });
+    db.close();
+    await chrome.tabs.create({ url: chrome.runtime.getURL("open.html") });
+  } catch (e) {
+    status.textContent = e.message;
+  }
+}
 async function exportItem(item) {
   let url;
   let downloadId;
   let onChanged;
   const downloads = chrome.downloads;
   try {
-    const s = {...defaults, ...await chrome.storage.local.get(defaults)};
+    const s = { ...defaults, ...(await chrome.storage.local.get(defaults)) };
     url = URL.createObjectURL(item.blob);
     downloadId = await downloads.download({
       url,
       filename: item.filename || "capture",
       conflictAction: "uniquify",
-      saveAs: Boolean(s.showSaveDialog)
+      saveAs: Boolean(s.showSaveDialog),
     });
     status.textContent = "Export started: " + (item.filename || "capture");
-    onChanged = delta => {
+    onChanged = (delta) => {
       if (delta.id !== downloadId) return;
       if (delta.state?.current === "complete") {
         showToast("Export complete");
         downloads.onChanged.removeListener(onChanged);
       } else if (delta.state?.current === "interrupted") {
-        status.textContent = "Export failed: " + (delta.error?.current || "The browser interrupted the export.");
+        status.textContent =
+          "Export failed: " +
+          (delta.error?.current || "The browser interrupted the export.");
         downloads.onChanged.removeListener(onChanged);
       }
     };
     downloads.onChanged.addListener(onChanged);
-    const [latest] = await downloads.search({id: downloadId});
+    const [latest] = await downloads.search({ id: downloadId });
     if (latest?.state === "complete") {
       showToast("Export complete");
       downloads.onChanged.removeListener(onChanged);
     } else if (latest?.state === "interrupted") {
-      status.textContent = "Export failed: " + (latest.error || "The browser interrupted the export.");
+      status.textContent =
+        "Export failed: " +
+        (latest.error || "The browser interrupted the export.");
       downloads.onChanged.removeListener(onChanged);
     }
   } catch (e) {
     if (onChanged) downloads.onChanged.removeListener(onChanged);
-    status.textContent = "Could not export capture: " + (e?.message || "Unknown error");
+    status.textContent =
+      "Could not export capture: " + (e?.message || "Unknown error");
   } finally {
     if (url) setTimeout(() => URL.revokeObjectURL(url), 60000);
   }
 }
-async function deleteItem(item){if(!confirm("Delete this capture from your Library? The exported file on your device will not be affected."))return;try{const db=await dbOpen();await new Promise((resolve,reject)=>{const tx=db.transaction("library","readwrite");tx.objectStore("library").delete(item.id);tx.oncomplete=resolve;tx.onerror=()=>reject(new Error("Could not delete capture."));});db.close();status.textContent="Capture deleted from Library.";await refresh();}catch(e){status.textContent=e.message;}}
-toggle.addEventListener("change",async()=>{toggle.disabled=true;try{await chrome.storage.local.set({libraryEnabled:toggle.checked});updateDescription();status.textContent=toggle.checked?"Library enabled. New captures will be saved here.":"Library disabled. Existing captures have been kept."; }catch(e){toggle.checked=!toggle.checked;status.textContent="Could not update setting: "+e.message;}finally{toggle.disabled=false;}});
-(async()=>{try{const s={...defaults,...await chrome.storage.local.get(defaults)};toggle.checked=Boolean(s.libraryEnabled);updateDescription();await refresh();if(!toggle.checked)status.textContent="Library is disabled. Existing captures remain available.";}catch(e){status.textContent=e.message;}})();
+async function deleteItem(item) {
+  if (
+    !confirm(
+      "Delete this capture from your Library? The exported file on your device will not be affected.",
+    )
+  )
+    return;
+  try {
+    const db = await dbOpen();
+    await new Promise((resolve, reject) => {
+      const tx = db.transaction("library", "readwrite");
+      tx.objectStore("library").delete(item.id);
+      tx.oncomplete = resolve;
+      tx.onerror = () => reject(new Error("Could not delete capture."));
+    });
+    db.close();
+    status.textContent = "Capture deleted from Library.";
+    await refresh();
+  } catch (e) {
+    status.textContent = e.message;
+  }
+}
+toggle.addEventListener("change", async () => {
+  toggle.disabled = true;
+  try {
+    await chrome.storage.local.set({ libraryEnabled: toggle.checked });
+    updateDescription();
+    status.textContent = toggle.checked
+      ? "Library enabled. New captures will be saved here."
+      : "Library disabled. Existing captures have been kept.";
+  } catch (e) {
+    toggle.checked = !toggle.checked;
+    status.textContent = "Could not update setting: " + e.message;
+  } finally {
+    toggle.disabled = false;
+  }
+});
+(async () => {
+  try {
+    const s = { ...defaults, ...(await chrome.storage.local.get(defaults)) };
+    toggle.checked = Boolean(s.libraryEnabled);
+    updateDescription();
+    await refresh();
+    if (!toggle.checked)
+      status.textContent =
+        "Library is disabled. Existing captures remain available.";
+  } catch (e) {
+    status.textContent = e.message;
+  }
+})();

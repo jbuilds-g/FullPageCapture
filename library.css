@@ -1,37 +1,230 @@
-.library-page { min-height: 100vh; width: 100%; }
-.library-app { width: min(100%, 1120px); margin: 0 auto; padding: 34px 30px 48px; }
-.page-header { display: flex; align-items: center; gap: 13px; margin-bottom: 30px; }
-.page-header .brand-copy { flex: 1; }
-.page-header h1 { font-size: 21px; }
-.page-header .brand-copy p { font-size: 13px; }
-.page-icon-button { width: 40px; height: 40px; display: grid; place-items: center; border: 1px solid var(--border); border-radius: 11px; background: var(--surface); color: var(--muted); }
-.page-icon-button:hover { color: var(--accent); }
-.page-icon-button svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
-.library-control { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 19px 21px; border: 1px solid var(--border); border-radius: 15px; background: var(--surface); }
-.library-control h2 { margin: 0 0 5px; font-size: 14px; font-weight: 680; }
-.library-control p { max-width: 650px; margin: 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
-.switch { position: relative; display: inline-flex; flex: 0 0 auto; width: 46px; height: 27px; cursor: pointer; }
-.switch input { position: absolute; opacity: 0; width: 1px; height: 1px; }
-.switch span { width: 46px; height: 27px; border-radius: 99px; background: color-mix(in srgb, CanvasText 25%, Canvas); transition: background .18s; }
-.switch span:after { content: ""; position: absolute; top: 3px; left: 3px; width: 21px; height: 21px; border-radius: 50%; background: Canvas; box-shadow: 0 1px 3px #0003; transition: transform .18s; }
-.switch input:checked + span { background: var(--accent); }
-.switch input:checked + span:after { transform: translateX(19px); }
-.switch input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 3px; }
-.library-status { min-height: 42px; padding: 17px 2px 10px; color: var(--muted); font-size: 12px; }
-.library-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 17px; }
-.capture-card { overflow: hidden; border: 1px solid var(--border); border-radius: 14px; background: var(--surface); }
-.capture-preview { display: grid; place-items: center; height: 180px; overflow: hidden; background: var(--soft); }
-.capture-preview img { width: 100%; height: 100%; object-fit: contain; }
-.capture-preview span { color: var(--muted); font-size: 30px; font-weight: 700; letter-spacing: .04em; }
-.capture-details { padding: 14px; }
-.capture-title { margin: 0; overflow-wrap: anywhere; font-size: 13px; font-weight: 650; }
-.capture-meta { margin: 7px 0 13px; color: var(--muted); font-size: 11px; line-height: 1.5; }
-.capture-actions { display: flex; flex-wrap: wrap; gap: 7px; }
-.capture-actions button { width: auto; min-height: 32px; padding: 7px 12px; border: 1px solid var(--border); border-radius: 8px; background: Canvas; color: CanvasText; font-size: 11px; font-weight: 620; }
-.capture-actions button:hover { border-color: var(--accent); color: var(--accent); }
-.capture-actions .delete { color: #c34c4c; }
-.capture-actions .delete:hover { border-color: #c34c4c; }
-.empty-state { padding: 42px 20px; border: 1px dashed var(--border); border-radius: 14px; color: var(--muted); text-align: center; font-size: 13px; }
-.library-status.toast-visible { position: fixed; right: 24px; bottom: 24px; z-index: 10; min-height: 0; padding: 12px 17px; border: 1px solid var(--border); border-radius: 11px; background: CanvasText; color: Canvas; box-shadow: 0 5px 20px #0003; animation: toast-in .16s ease-out; }
-@keyframes toast-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-@media (max-width: 560px) { .library-app { padding: 22px 16px 36px; } .library-control { padding: 16px; } .library-grid { grid-template-columns: 1fr; } }
+.library-page {
+  min-height: 100vh;
+  width: 100%;
+}
+.library-app {
+  width: min(100%, 1120px);
+  margin: 0 auto;
+  padding: 34px 30px 48px;
+}
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  margin-bottom: 30px;
+}
+.page-header .brand-copy {
+  flex: 1;
+}
+.page-header h1 {
+  font-size: 21px;
+}
+.page-header .brand-copy p {
+  font-size: 13px;
+}
+.page-icon-button {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  background: var(--surface);
+  color: var(--muted);
+}
+.page-icon-button:hover {
+  color: var(--accent);
+}
+.page-icon-button svg {
+  width: 19px;
+  height: 19px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.library-control {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 19px 21px;
+  border: 1px solid var(--border);
+  border-radius: 15px;
+  background: var(--surface);
+}
+.library-control h2 {
+  margin: 0 0 5px;
+  font-size: 14px;
+  font-weight: 680;
+}
+.library-control p {
+  max-width: 650px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.switch {
+  position: relative;
+  display: inline-flex;
+  flex: 0 0 auto;
+  width: 46px;
+  height: 27px;
+  cursor: pointer;
+}
+.switch input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+.switch span {
+  width: 46px;
+  height: 27px;
+  border-radius: 99px;
+  background: color-mix(in srgb, CanvasText 25%, Canvas);
+  transition: background 0.18s;
+}
+.switch span:after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 21px;
+  height: 21px;
+  border-radius: 50%;
+  background: Canvas;
+  box-shadow: 0 1px 3px #0003;
+  transition: transform 0.18s;
+}
+.switch input:checked + span {
+  background: var(--accent);
+}
+.switch input:checked + span:after {
+  transform: translateX(19px);
+}
+.switch input:focus-visible + span {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.library-status {
+  min-height: 42px;
+  padding: 17px 2px 10px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.library-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 17px;
+}
+.capture-card {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+}
+.capture-preview {
+  display: grid;
+  place-items: center;
+  height: 180px;
+  overflow: hidden;
+  background: var(--soft);
+}
+.capture-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.capture-preview span {
+  color: var(--muted);
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.capture-details {
+  padding: 14px;
+}
+.capture-title {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-size: 13px;
+  font-weight: 650;
+}
+.capture-meta {
+  margin: 7px 0 13px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+.capture-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+.capture-actions button {
+  width: auto;
+  min-height: 32px;
+  padding: 7px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: Canvas;
+  color: CanvasText;
+  font-size: 11px;
+  font-weight: 620;
+}
+.capture-actions button:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.capture-actions .delete {
+  color: #c34c4c;
+}
+.capture-actions .delete:hover {
+  border-color: #c34c4c;
+}
+.empty-state {
+  padding: 42px 20px;
+  border: 1px dashed var(--border);
+  border-radius: 14px;
+  color: var(--muted);
+  text-align: center;
+  font-size: 13px;
+}
+.library-status.toast-visible {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 10;
+  min-height: 0;
+  padding: 12px 17px;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  background: CanvasText;
+  color: Canvas;
+  box-shadow: 0 5px 20px #0003;
+  animation: toast-in 0.16s ease-out;
+}
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (max-width: 560px) {
+  .library-app {
+    padding: 22px 16px 36px;
+  }
+  .library-control {
+    padding: 16px;
+  }
+  .library-grid {
+    grid-template-columns: 1fr;
+  }
+}

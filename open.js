@@ -4,7 +4,8 @@ const previewEl = document.querySelector("#preview");
 function readLatestExport() {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open("fullPageCaptureExports", 2);
-    request.onerror = () => reject(new Error("Could not access the saved capture."));
+    request.onerror = () =>
+      reject(new Error("Could not access the saved capture."));
     request.onsuccess = () => {
       const db = request.result;
       if (!db.objectStoreNames.contains("exports")) {
@@ -31,7 +32,8 @@ async function initialize() {
   try {
     const item = await readLatestExport();
     if (!item?.blob || !(item.blob instanceof Blob)) {
-      statusEl.textContent = "No saved capture preview is available. Save a capture first.";
+      statusEl.textContent =
+        "No saved capture preview is available. Save a capture first.";
       return;
     }
     const url = URL.createObjectURL(item.blob);
@@ -48,13 +50,17 @@ async function initialize() {
       image.src = url;
       previewEl.appendChild(image);
     } else {
-      statusEl.textContent = "This file type cannot be previewed in the browser.";
+      statusEl.textContent =
+        "This file type cannot be previewed in the browser.";
       return;
     }
     statusEl.textContent = "";
-    window.addEventListener("pagehide", () => URL.revokeObjectURL(url), { once: true });
+    window.addEventListener("pagehide", () => URL.revokeObjectURL(url), {
+      once: true,
+    });
   } catch (error) {
-    statusEl.textContent = error?.message || "Could not open the saved capture.";
+    statusEl.textContent =
+      error?.message || "Could not open the saved capture.";
   }
 }
 

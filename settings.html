@@ -1,68 +1,222 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Settings · FullPageCapture</title>
-  <link rel="stylesheet" href="popup.css">
-  <link rel="stylesheet" href="settings.css">
-</head>
-<body class="settings-page">
-  <main class="settings-app">
-    <header class="page-header">
-      <div class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h6M14 7h6M4 17h2M10 17h10"/><circle cx="12" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg></div>
-      <div class="brand-copy"><h1>Settings</h1><p>Make FullPageCapture work your way</p></div>
-    </header>
-
-    <section class="settings-content" aria-label="Extension settings">
-      <details class="settings-group" open>
-        <summary><span><strong>Capture</strong><small>Choose your preferred capture format</small></span><span class="chevron" aria-hidden="true"></span></summary>
-        <div class="settings-group-content">
-          <div class="setting-row"><div class="setting-copy"><label for="default-format">Default export format</label><p class="help">You can still choose a different format each time you capture.</p></div><select id="default-format"><option value="png">PNG</option><option value="jpeg">JPEG</option><option value="pdf">PDF</option></select></div>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Settings · FullPageCapture</title>
+    <link rel="stylesheet" href="popup.css" />
+    <link rel="stylesheet" href="settings.css" />
+  </head>
+  <body class="settings-page">
+    <main class="settings-app">
+      <header class="page-header">
+        <div class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 7h6M14 7h6M4 17h2M10 17h10" />
+            <circle cx="12" cy="7" r="2" />
+            <circle cx="8" cy="17" r="2" />
+          </svg>
         </div>
-      </details>
-
-      <details class="settings-group" open>
-        <summary><span><strong>File naming &amp; saving</strong><small>Control filenames and where exports go</small></span><span class="chevron" aria-hidden="true"></span></summary>
-        <div class="settings-group-content">
-          <div class="setting-field"><label for="filename-pattern">Filename pattern</label><input id="filename-pattern" type="text" maxlength="120" spellcheck="false"><p class="help">Use {title}, {date}, and {time}. Example: {title}-{date}</p></div>
-          <div class="setting-field"><label for="save-folder">Save subfolder</label><input id="save-folder" type="text" maxlength="120" placeholder="FullPageCapture"><p class="help">A folder inside your browser's configured save location. Leave blank to use its root.</p></div>
-          <div class="setting-row setting-toggle"><div class="setting-copy"><label for="show-save-dialog">Ask where to save each capture</label><p class="help">Show the browser's save-location picker for every export.</p></div><input id="show-save-dialog" type="checkbox"></div>
+        <div class="brand-copy">
+          <h1>Settings</h1>
+          <p>Make FullPageCapture work your way</p>
         </div>
-      </details>
+      </header>
 
-      <details class="settings-group" open>
-        <summary><span><strong>Capture Library</strong><small>Keep completed captures on this device</small></span><span class="chevron" aria-hidden="true"></span></summary>
-        <div class="settings-group-content">
-          <div class="setting-row setting-toggle"><div class="setting-copy"><label for="library-enabled">Save captures to Library</label><p class="help">Turning this off stops new captures from being stored. Existing captures stay available.</p></div><input id="library-enabled" type="checkbox"></div>
+      <section class="settings-content" aria-label="Extension settings">
+        <details class="settings-group" open>
+          <summary>
+            <span
+              ><strong>Capture</strong
+              ><small>Choose your preferred capture format</small></span
+            ><span class="chevron" aria-hidden="true"></span>
+          </summary>
+          <div class="settings-group-content">
+            <div class="setting-row">
+              <div class="setting-copy">
+                <label for="default-format">Default export format</label>
+                <p class="help">
+                  You can still choose a different format each time you capture.
+                </p>
+              </div>
+              <select id="default-format">
+                <option value="png">PNG</option>
+                <option value="jpeg">JPEG</option>
+                <option value="pdf">PDF</option>
+              </select>
+            </div>
+          </div>
+        </details>
+
+        <details class="settings-group" open>
+          <summary>
+            <span
+              ><strong>File naming &amp; saving</strong
+              ><small>Control filenames and where exports go</small></span
+            ><span class="chevron" aria-hidden="true"></span>
+          </summary>
+          <div class="settings-group-content">
+            <div class="setting-field">
+              <label for="filename-pattern">Filename pattern</label
+              ><input
+                id="filename-pattern"
+                type="text"
+                maxlength="120"
+                spellcheck="false"
+              />
+              <p class="help">
+                Use {title}, {date}, and {time}. Example: {title}-{date}
+              </p>
+            </div>
+            <div class="setting-field">
+              <label for="save-folder">Save subfolder</label
+              ><input
+                id="save-folder"
+                type="text"
+                maxlength="120"
+                placeholder="FullPageCapture"
+              />
+              <p class="help">
+                A folder inside your browser's configured save location. Leave
+                blank to use its root.
+              </p>
+            </div>
+            <div class="setting-row setting-toggle">
+              <div class="setting-copy">
+                <label for="show-save-dialog"
+                  >Ask where to save each capture</label
+                >
+                <p class="help">
+                  Show the browser's save-location picker for every export.
+                </p>
+              </div>
+              <input id="show-save-dialog" type="checkbox" />
+            </div>
+          </div>
+        </details>
+
+        <details class="settings-group" open>
+          <summary>
+            <span
+              ><strong>Capture Library</strong
+              ><small>Keep completed captures on this device</small></span
+            ><span class="chevron" aria-hidden="true"></span>
+          </summary>
+          <div class="settings-group-content">
+            <div class="setting-row setting-toggle">
+              <div class="setting-copy">
+                <label for="library-enabled">Save captures to Library</label>
+                <p class="help">
+                  Turning this off stops new captures from being stored.
+                  Existing captures stay available.
+                </p>
+              </div>
+              <input id="library-enabled" type="checkbox" />
+            </div>
+          </div>
+        </details>
+
+        <details class="settings-group">
+          <summary>
+            <span
+              ><strong>Backup &amp; Restore</strong
+              ><small
+                >Export or restore your settings and saved captures</small
+              ></span
+            ><span class="chevron" aria-hidden="true"></span>
+          </summary>
+          <div class="settings-group-content">
+            <p class="help backup-description">
+              A backup includes extension settings, saved captures, Library
+              data, and metadata.
+            </p>
+            <button id="create-backup" class="secondary" type="button">
+              Export full backup
+            </button>
+            <div class="backup-import">
+              <label for="backup-file">Restore from backup</label
+              ><input
+                id="backup-file"
+                type="file"
+                accept=".json,application/json"
+              />
+              <p id="backup-preview" class="help" aria-live="polite">
+                Choose a backup file to inspect it before restoring.
+              </p>
+              <button
+                id="restore-backup"
+                class="primary"
+                type="button"
+                disabled
+              >
+                Restore backup
+              </button>
+            </div>
+            <div
+              id="backup-status"
+              class="inline-status"
+              role="status"
+              aria-live="polite"
+            ></div>
+          </div>
+        </details>
+      </section>
+
+      <div class="settings-actions">
+        <div
+          id="settings-status"
+          class="inline-status"
+          role="status"
+          aria-live="polite"
+        >
+          Settings are stored on this device.
         </div>
-      </details>
-
-      <details class="settings-group">
-        <summary><span><strong>Backup &amp; Restore</strong><small>Export or restore your settings and saved captures</small></span><span class="chevron" aria-hidden="true"></span></summary>
-        <div class="settings-group-content">
-          <p class="help backup-description">A backup includes extension settings, saved captures, Library data, and metadata.</p>
-          <button id="create-backup" class="secondary" type="button">Export full backup</button>
-          <div class="backup-import"><label for="backup-file">Restore from backup</label><input id="backup-file" type="file" accept=".json,application/json"><p id="backup-preview" class="help" aria-live="polite">Choose a backup file to inspect it before restoring.</p><button id="restore-backup" class="primary" type="button" disabled>Restore backup</button></div>
-          <div id="backup-status" class="inline-status" role="status" aria-live="polite"></div>
-        </div>
-      </details>
-    </section>
-
-    <div class="settings-actions"><div id="settings-status" class="inline-status" role="status" aria-live="polite">Settings are stored on this device.</div><button id="save-settings" class="primary" type="button">Save settings</button></div>
-        <footer class="modal-footer">
-      <div class="footer-row footer-row-primary">
-        <span class="footer-brand">FullPageCapture</span>
-        <a href="https://github.com/jbuilds-g/FullPageCapture" target="_blank" rel="noopener noreferrer" class="footer-version" title="View source on GitHub">v1.0.0</a>
+        <button id="save-settings" class="primary" type="button">
+          Save settings
+        </button>
       </div>
-      <div class="footer-row footer-row-secondary">
-        <span class="footer-copy">© 2026 • <a href="https://github.com/jbuilds-g/FullPageCapture/blob/development/LICENSE" target="_blank" rel="noopener noreferrer">MIT</a></span>
-        <a href="https://github.com/jbuilds-g/FullPageCapture/blob/development/private-policy.md" target="_blank" rel="noopener noreferrer" class="footer-link">Privacy Policy</a>
-        <span class="footer-credit">Made with ♥️ • <a href="https://github.com/jbuilds-g" target="_blank" rel="noopener noreferrer">jbuilds-g</a></span>
-      </div>
-    </footer>
-  </main>
-  <script src="settings.js"></script>
-  <script src="backup.js"></script>
-</body>
+      <footer class="modal-footer">
+        <div class="footer-row footer-row-primary">
+          <span class="footer-brand">FullPageCapture</span>
+          <a
+            href="https://github.com/jbuilds-g/FullPageCapture"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="footer-version"
+            title="View source on GitHub"
+            >v1.0.0</a
+          >
+        </div>
+        <div class="footer-row footer-row-secondary">
+          <span class="footer-copy"
+            >© 2026 •
+            <a
+              href="https://github.com/jbuilds-g/FullPageCapture/blob/development/LICENSE"
+              target="_blank"
+              rel="noopener noreferrer"
+              >MIT</a
+            ></span
+          >
+          <a
+            href="https://github.com/jbuilds-g/FullPageCapture/blob/development/private-policy.md"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="footer-link"
+            >Privacy Policy</a
+          >
+          <span class="footer-credit"
+            >Made with ♥️ •
+            <a
+              href="https://github.com/jbuilds-g"
+              target="_blank"
+              rel="noopener noreferrer"
+              >jbuilds-g</a
+            ></span
+          >
+        </div>
+      </footer>
+    </main>
+    <script src="settings.js"></script>
+    <script src="backup.js"></script>
+  </body>
 </html>
