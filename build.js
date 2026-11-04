@@ -42,12 +42,22 @@ function createArchive(output, archive) {
   if (process.platform === "win32") {
     const command =
       "$ErrorActionPreference = 'Stop'; " +
+      "Add-Type -AssemblyName System.IO.Compression; " +
       "Add-Type -AssemblyName System.IO.Compression.FileSystem; " +
-      "[System.IO.Compression.ZipFile]::CreateFromDirectory(" +
-      "$env:PACKAGE_DIR, $env:ARCHIVE_PATH); " +
-      "$zip = [System.IO.Compression.ZipFile]::OpenRead($env:ARCHIVE_PATH); " +
-      "try { if ($zip.Entries.Count -eq 0) { throw 'Archive contains no files.' } } " +
-      "finally { $zip.Dispose() }";
+      "$stream = [System.IO.File]::Open($env:ARCHIVE_PATH, 'Create'); " +
+      "try { " +
+      "$zip = [System.IO.Compression.ZipArchive]::new($stream, 'Create'); " +
+      "try { " +
+      "Get-ChildItem -LiteralPath $env:PACKAGE_DIR -File -Recurse | ForEach-Object { " +
+      "$entryName = [System.IO.Path]::GetRelativePath($env:PACKAGE_DIR, $_.FullName).Replace('\\', '/'); " +
+      "[System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $_.FullName, $entryName) | Out-Null " +
+      "} " +
+      "} finally { $zip.Dispose() } " +
+      "} finally { $stream.Dispose() } " +
+      "$check = [System.IO.Compression.ZipFile]::OpenRead($env:ARCHIVE_PATH); " +
+      "try { if ($check.Entries.Count -eq 0) { throw 'Archive contains no files.' }; " +
+      "if ($check.Entries.Name -contains '') { throw 'Archive contains an invalid entry.' } } " +
+      "finally { $check.Dispose() }";
 
     execFileSync(
       "powershell.exe",
