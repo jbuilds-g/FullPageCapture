@@ -2,3 +2,15 @@
 /dist/
 *.zip
 .gitignore
+
+
+# Build outputs and zips
+dist/
+*.zip
+*.py
+
+
+# OS / Editor junk
+.DS_Store
+Thumbs.db
+.vscode/

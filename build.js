@@ -23,7 +23,6 @@ const files = [
   "download.html",
   "download.js",
   "backup.js",
-  "private-policy.md",
   "icons/icon-16.png",
   "icons/icon-32.png",
   "icons/icon-48.png",
@@ -103,7 +102,9 @@ function copyPackage(browser) {
   );
 
   createArchive(output, archive);
-  console.log(`Created ${path.basename(archive)} (${fs.statSync(archive).size} bytes)`);
+  console.log(
+    `Created ${path.basename(archive)} (${fs.statSync(archive).size} bytes)`,
+  );
 }
 
 try {
