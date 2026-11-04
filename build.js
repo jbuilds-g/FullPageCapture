@@ -43,8 +43,13 @@ function createArchive(output, archive) {
   if (process.platform === "win32") {
     const command =
       "$ErrorActionPreference = 'Stop'; " +
-      "Compress-Archive -Path (Join-Path $env:PACKAGE_DIR '*') " +
-      "-DestinationPath $env:ARCHIVE_PATH -Force";
+      "Add-Type -AssemblyName System.IO.Compression.FileSystem; " +
+      "[System.IO.Compression.ZipFile]::CreateFromDirectory(" +
+      "$env:PACKAGE_DIR, $env:ARCHIVE_PATH); " +
+      "$zip = [System.IO.Compression.ZipFile]::OpenRead($env:ARCHIVE_PATH); " +
+      "try { if ($zip.Entries.Count -eq 0) { throw 'Archive contains no files.' } } " +
+      "finally { $zip.Dispose() }";
+
     execFileSync(
       "powershell.exe",
       ["-NoProfile", "-NonInteractive", "-Command", command],
@@ -53,24 +58,6 @@ function createArchive(output, archive) {
         env: {
           ...process.env,
           PACKAGE_DIR: output,
-          ARCHIVE_PATH: archive,
-        },
-      },
-    );
-
-    const verify =
-      "$ErrorActionPreference = 'Stop'; " +
-      "Add-Type -AssemblyName System.IO.Compression.FileSystem; " +
-      "$zip = [System.IO.Compression.ZipFile]::OpenRead($env:ARCHIVE_PATH); " +
-      "try { if ($zip.Entries.Count -eq 0) { throw 'Archive contains no files.' } } " +
-      "finally { $zip.Dispose() }";
-    execFileSync(
-      "powershell.exe",
-      ["-NoProfile", "-NonInteractive", "-Command", verify],
-      {
-        stdio: "inherit",
-        env: {
-          ...process.env,
           ARCHIVE_PATH: archive,
         },
       },
