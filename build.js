@@ -49,7 +49,7 @@ function createArchive(output, archive) {
       "$zip = [System.IO.Compression.ZipArchive]::new($stream, 'Create'); " +
       "try { " +
       "Get-ChildItem -LiteralPath $env:PACKAGE_DIR -File -Recurse | ForEach-Object { " +
-      "$entryName = [System.IO.Path]::GetRelativePath($env:PACKAGE_DIR, $_.FullName).Replace('\\', '/'); " +
+      "$entryName = $_.FullName.Substring($env:PACKAGE_DIR.Length).TrimStart([char]92, [char]47).Replace([char]92, [char]47); " +
       "[System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $_.FullName, $entryName) | Out-Null " +
       "} " +
       "} finally { $zip.Dispose() } " +
