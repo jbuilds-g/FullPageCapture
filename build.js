@@ -37,6 +37,45 @@ const browsers = [
   { name: "firefox", manifest: "manifest.firefox.json" },
 ];
 
+function createArchive(output, archive) {
+  fs.rmSync(archive, { force: true });
+
+  if (process.platform === "win32") {
+    const command =
+      "$ErrorActionPreference = 'Stop'; " +
+      "Add-Type -AssemblyName System.IO.Compression.FileSystem; " +
+      "[System.IO.Compression.ZipFile]::CreateFromDirectory(" +
+      "$env:PACKAGE_DIR, $env:ARCHIVE_PATH); " +
+      "$zip = [System.IO.Compression.ZipFile]::OpenRead($env:ARCHIVE_PATH); " +
+      "try { if ($zip.Entries.Count -eq 0) { throw 'Archive contains no files.' } } " +
+      "finally { $zip.Dispose() }";
+
+    execFileSync(
+      "powershell.exe",
+      ["-NoProfile", "-NonInteractive", "-Command", command],
+      {
+        stdio: "inherit",
+        env: {
+          ...process.env,
+          PACKAGE_DIR: output,
+          ARCHIVE_PATH: archive,
+        },
+      },
+    );
+  } else {
+    execFileSync("zip", ["-r", archive, "."], {
+      cwd: output,
+      stdio: "inherit",
+    });
+    execFileSync("unzip", ["-Z1", archive], { stdio: "ignore" });
+  }
+
+  const stats = fs.statSync(archive);
+  if (stats.size === 0) {
+    throw new Error(`Archive is empty: ${path.basename(archive)}`);
+  }
+}
+
 function copyPackage(browser) {
   const sourceManifest = path.join(root, browser.manifest);
   const output = path.join(dist, browser.name);
@@ -63,18 +102,8 @@ function copyPackage(browser) {
     `FullPageCapture-${browser.name}-v${version}.zip`,
   );
 
-  if (process.platform === "win32") {
-    execFileSync("tar", ["-a", "-c", "-f", archive, "-C", output, "."], {
-      stdio: "inherit",
-    });
-  } else {
-    execFileSync("zip", ["-r", archive, "."], {
-      cwd: output,
-      stdio: "inherit",
-    });
-  }
-
-  console.log(`Created ${path.basename(archive)}`);
+  createArchive(output, archive);
+  console.log(`Created ${path.basename(archive)} (${fs.statSync(archive).size} bytes)`);
 }
 
 try {
